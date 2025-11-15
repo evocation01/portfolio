@@ -1,41 +1,88 @@
+# =========================================================================
+# GENERAL
+# =========================================================================
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+
+# =========================================================================
+# DEPENDENCIES & LOCK FILES
+# =========================================================================
+# Node.js dependencies. Never commit these.
 /node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# =========================================================================
+# FRAMEWORK-SPECIFIC (Next.js)
+# =========================================================================
+# Build cache and output from Next.js.
 /.next/
 /out/
+/.intlayer/
 
-# production
+# Auto-generated TypeScript declaration file for Next.js.
+next-env.d.ts
+
+
+# =========================================================================
+# BUILD & COMPILATION OUTPUT
+# =========================================================================
+# General production build folders.
 /build
+/dist
 
-# misc
-.DS_Store
-*.pem
 
-# debug
+# =========================================================================
+# LOGS & DEBUGGING
+# =========================================================================
+# Log files from various package managers and applications.
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
-# env files (can opt-in for committing if needed)
+# =========================================================================
+# ENVIRONMENT VARIABLES & SENSITIVE FILES
+# =========================================================================
+# Ignore all environment files. A `.env.example` file should be committed instead.
 .env*
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# vercel
+
+# =========================================================================
+# PLATFORM-SPECIFIC
+# =========================================================================
+# Vercel deployment-specific configuration.
 .vercel
 
-# typescript
+
+# =========================================================================
+# CACHES & TEMPORARY FILES
+# =========================================================================
+# TypeScript build cache.
 *.tsbuildinfo
-next-env.d.ts
+
+# Cache directory for monorepo tools like Turborepo.
+.turbo
+
+# Test coverage reports (generated files).
+coverage/
+lighthouse-report.html
+
+
+# =========================================================================
+# OS & EDITOR CONFIGURATION
+# =========================================================================
+# macOS specific files.
+.DS_Store
+.AppleDouble
+
+# Editor-specific configuration folders.
+# Prevents sharing personal editor settings with the team.
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
