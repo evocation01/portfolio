@@ -1,13 +1,12 @@
 // components/layouts/Header.tsx
 "use client";
 import { signIn, signOut, useSession } from "next-auth/react";
-import Link from "next/link";
 // Note: Ensure you have these components created or replace with standard HTML/Shadcn
 import { Button } from "@/components/ui/button";
-import { ThemeSwitcher } from "./ThemeSwitcher";
-// Assuming LocalizedLink and LanguageSwitcher are created in your project structure
-// import { LocalizedLink } from "../LocalizedLink";
-// import { LanguageSwitcher } from "../LanguageSwitcher";
+import { ThemeSwitcher } from "../ThemeSwitcher";
+import { LanguageSwitcher } from "../LanguageSwitcher";
+import { LocalizedLink } from "../LocalizedLink"; // Now imported
+import { Code2 } from "lucide-react"; // For the new icon
 
 export function Header() {
     const { data: session } = useSession();
@@ -15,22 +14,35 @@ export function Header() {
     return (
         <header className="flex items-center justify-between p-4 border-b bg-background">
             <nav className="flex items-center gap-4">
-                <Link href="/" className="text-sm font-medium hover:underline">
+                <Code2 className="h-6 w-6 text-primary" /> {/* New Icon */}
+                <LocalizedLink
+                    href="/"
+                    className="text-sm font-medium hover:underline"
+                >
                     Home
-                </Link>
-                <Link
+                </LocalizedLink>
+                <LocalizedLink
                     href="/projects"
                     className="text-sm font-medium hover:underline"
                 >
                     Projects
-                </Link>
+                </LocalizedLink>
+                <LocalizedLink
+                    href="/contact"
+                    className="text-sm font-medium hover:underline"
+                >
+                    Contact
+                </LocalizedLink>
             </nav>
             <div className="flex items-center gap-4">
                 {session ? (
                     <>
-                        <span className="text-sm text-muted-foreground">
+                        <LocalizedLink
+                            href="/admin"
+                            className="text-sm text-muted-foreground hover:underline"
+                        >
                             {session.user?.email}
-                        </span>
+                        </LocalizedLink>
                         <Button variant="outline" onClick={() => signOut()}>
                             Logout
                         </Button>
@@ -38,7 +50,7 @@ export function Header() {
                 ) : (
                     <Button onClick={() => signIn()}>Login</Button>
                 )}
-                {/* <LanguageSwitcher /> */}
+                <LanguageSwitcher /> {/* Uncommented */}
                 <ThemeSwitcher />
             </div>
         </header>

@@ -1,0 +1,354 @@
+// components/admin/ProjectForm.tsx
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { deleteImage, uploadImage } from "@/lib/upload-actions";
+import { type projects } from "@/lib/schema";
+import { Loader2, Save, Trash2, UploadCloud } from "lucide-react";
+import Image from "next/image";
+import { useActionState, useState, useTransition } from "react";
+
+type Project = typeof projects.$inferSelect;
+
+// Define the shape of the server action function
+type ProjectServerAction = (
+    prevState: { message?: string; errors?: Record<string, string[]> },
+    formData: FormData
+) => Promise<{ message?: string; errors?: Record<string, string[]> }>;
+
+interface ProjectFormProps {
+    project?: Project;
+    serverAction: ProjectServerAction;
+}
+
+export function ProjectForm({ project, serverAction }: ProjectFormProps) {
+    const [isPending, startTransition] = useTransition();
+    const [uploading, setUploading] = useState(false);
+
+    const isEditMode = !!project;
+
+    const [formData, setFormData] = useState({
+        slug: project?.slug ?? "",
+        title_en: project?.title_en ?? "",
+        description_en: project?.description_en ?? "",
+        body_en: project?.body_en ?? "",
+        title_tr: project?.title_tr ?? "",
+        description_tr: project?.description_tr ?? "",
+        body_tr: project?.body_tr ?? "",
+        tags: project?.tags?.join(", ") ?? "",
+        github_url: project?.github_url ?? "",
+        live_url: project?.live_url ?? "",
+        thumbnail_url: project?.thumbnail_url ?? "",
+    });
+
+    const [state, formAction] = useActionState(serverAction, {
+        message: "",
+        errors: {},
+    });
+
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const result = await uploadImage(formData);
+
+        if (result.error) {
+            // Handle error, e.g., show a toast notification
+            console.error(result.error);
+            alert(`Upload failed: ${result.error}`);
+        } else if (result.url) {
+            setFormData((prev) => ({ ...prev, thumbnail_url: result.url }));
+        }
+        setUploading(false);
+    };
+
+    const handleRemoveImage = async () => {
+        if (!formData.thumbnail_url) return;
+
+        const result = await deleteImage(formData.thumbnail_url);
+        if (result.error) {
+            console.error(result.error);
+            alert(`Failed to delete image: ${result.error}`);
+        } else {
+            setFormData((prev) => ({ ...prev, thumbnail_url: "" }));
+        }
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formDataObj = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+            formDataObj.append(key, value || "");
+        });
+        if (isEditMode) {
+            formDataObj.append("id", String(project.id));
+        }
+        startTransition(() => {
+            formAction(formDataObj);
+        });
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <Card className="w-full max-w-4xl mx-auto">
+                <CardHeader>
+                    <CardTitle>
+                        {isEditMode ? "Edit Project" : "Create New Project"}
+                    </CardTitle>
+                    <CardDescription>
+                        {isEditMode
+                            ? "Update the details of your existing project."
+                            : "Add a new project to your portfolio."}
+                    </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-6">
+                    {/* Thumbnail Uploader */}
+                    <div className="space-y-2">
+                        <Label>Thumbnail Image</Label>
+                        <div className="flex items-center gap-4">
+                            {formData.thumbnail_url ? (
+                                <div className="relative group">
+                                    <Image
+                                        src={formData.thumbnail_url}
+                                        alt="Thumbnail preview"
+                                        width={80}
+                                        height={80}
+                                        className="rounded-md object-cover w-20 h-20"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={handleRemoveImage}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
+                                    <p className="text-xs text-muted-foreground">
+                                        No Image
+                                    </p>
+                                </div>
+                            )}
+                            <div className="relative">
+                                <Input
+                                    id="thumbnail"
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    disabled={uploading}
+                                    className="pl-12"
+                                />
+                                <div className="absolute left-2 top-1/2 -translate-y-1/2">
+                                    {uploading ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <UploadCloud className="h-5 w-5" />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Global Fields */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="slug">Slug (URL)</Label>
+                            <Input
+                                id="slug"
+                                name="slug"
+                                placeholder="my-awesome-project"
+                                value={formData.slug}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            {state?.errors?.slug && (
+                                <p className="text-sm text-destructive">
+                                    {state.errors.slug}
+                                </p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="tags">Tags (comma separated)</Label>
+                            <Input
+                                id="tags"
+                                name="tags"
+                                placeholder="React, Next.js, TypeScript"
+                                value={formData.tags}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="github_url">GitHub URL</Label>
+                            <Input
+                                id="github_url"
+                                name="github_url"
+                                placeholder="https://github.com/..."
+                                value={formData.github_url}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="live_url">Live URL</Label>
+                            <Input
+                                id="live_url"
+                                name="live_url"
+                                placeholder="https://..."
+                                value={formData.live_url}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Bilingual Content Tabs */}
+                    <Tabs defaultValue="en" className="w-full mt-6">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="en">English 🇬🇧</TabsTrigger>
+                            <TabsTrigger value="tr">Turkish 🇹🇷</TabsTrigger>
+                        </TabsList>
+
+                        {/* English Content */}
+                        <TabsContent value="en" className="space-y-4 mt-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="title_en">Title (EN)</Label>
+                                <Input
+                                    id="title_en"
+                                    name="title_en"
+                                    placeholder="Project Title"
+                                    value={formData.title_en}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                {state?.errors?.title_en && (
+                                    <p className="text-sm text-destructive">
+                                        {state.errors.title_en}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="description_en">
+                                    Short Description (EN)
+                                </Label>
+                                <Textarea
+                                    id="description_en"
+                                    name="description_en"
+                                    placeholder="Brief summary for the card view..."
+                                    value={formData.description_en}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                {state?.errors?.description_en && (
+                                    <p className="text-sm text-destructive">
+                                        {state.errors.description_en}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="body_en">Full Body (EN)</Label>
+                                <Textarea
+                                    id="body_en"
+                                    name="body_en"
+                                    className="min-h-[200px] font-mono"
+                                    placeholder="Markdown supported content..."
+                                    value={formData.body_en}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                        </TabsContent>
+
+                        {/* Turkish Content */}
+                        <TabsContent value="tr" className="space-y-4 mt-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="title_tr">Title (TR)</Label>
+                                <Input
+                                    id="title_tr"
+                                    name="title_tr"
+                                    placeholder="Proje Başlığı"
+                                    value={formData.title_tr}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="description_tr">
+                                    Short Description (TR)
+                                </Label>
+                                <Textarea
+                                    id="description_tr"
+                                    name="description_tr"
+                                    placeholder="Kart görünümü için kısa özet..."
+                                    value={formData.description_tr}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="body_tr">Full Body (TR)</Label>
+                                <Textarea
+                                    id="body_tr"
+                                    name="body_tr"
+                                    className="min-h-[200px] font-mono"
+                                    placeholder="Markdown destekli içerik..."
+                                    value={formData.body_tr}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </CardContent>
+
+                <CardFooter className="flex justify-between">
+                    <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => history.back()}
+                    >
+                        Cancel
+                    </Button>
+                    <Button type="submit" disabled={isPending || uploading}>
+                        {isPending ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="mr-2 h-4 w-4" />
+                                {isEditMode ? "Update Project" : "Create Project"}
+                            </>
+                        )}
+                    </Button>
+                </CardFooter>
+            </Card>
+        </form>
+    );
+}
