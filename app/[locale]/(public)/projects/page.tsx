@@ -6,11 +6,12 @@ import { desc } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function ProjectsPage({
-    params,
-}: {
-    params: { locale: string };
-}) {
+export default async function ProjectsPage(
+    props: {
+        params: Promise<{ locale: string }>;
+    }
+) {
+    const params = await props.params;
     const allProjects = await db
         .select()
         .from(projects)

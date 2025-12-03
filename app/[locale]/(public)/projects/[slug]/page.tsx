@@ -10,11 +10,12 @@ import { ExternalLink, Github } from "lucide-react";
 // This page needs to determine the locale to show the correct content.
 // It gets the locale from the `params` object provided by Next.js.
 
-export default async function ProjectDetailPage({
-    params,
-}: {
-    params: { slug: string; locale: string };
-}) {
+export default async function ProjectDetailPage(
+    props: {
+        params: Promise<{ slug: string; locale: string }>;
+    }
+) {
+    const params = await props.params;
     const [project] = await db
         .select()
         .from(projects)

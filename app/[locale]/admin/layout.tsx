@@ -11,7 +11,7 @@ export default async function AdminLayout({
     // By reading a cookie, we explicitly opt this entire layout
     // and its children into dynamic rendering. This is the simplest
     // way to resolve the persistent cache-related errors.
-    cookies();
+    await cookies();
 
     const session = await auth();
 
