@@ -22,6 +22,7 @@ export const projects = pgTable("projects", {
     tags: text("tags").array(),
     github_url: varchar("github_url", { length: 255 }),
     live_url: varchar("live_url", { length: 255 }),
+    thumbnail_url: varchar("thumbnail_url", { length: 255 }),
     createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -70,6 +70,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
     },
     pages: {
-        signIn: "/login", // Customize this path as needed
+        signIn: "/login", // Use our custom login page
     },
 });
