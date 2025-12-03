@@ -1,15 +1,18 @@
 import { Locales, type IntlayerConfig } from "intlayer";
 
+/**
+ * Intlayer Configuration (v7)
+ * Documentation: https://intlayer.org/doc/concept/configuration
+ */
+
 const config: IntlayerConfig = {
     internationalization: {
         locales: [Locales.ENGLISH, Locales.TURKISH],
         defaultLocale: Locales.ENGLISH,
     },
-    content: {
-        contentDir: ["app"],
-    },
     routing: {
-        mode: "prefix-no-default", // default
+        // 'prefix-no-default' is standard: /tr/about for Turkish, /about for English
+        mode: "prefix-no-default",
     },
 };
 

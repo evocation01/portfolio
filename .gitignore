@@ -85,4 +85,4 @@ lighthouse-report.html
 .vscode/
 .idea/
 *.sublime-project
-*.sublime-workspace
+*.sublime-workspacenext.config.ts.backup

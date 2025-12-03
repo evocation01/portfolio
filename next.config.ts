@@ -4,15 +4,15 @@ import { withIntlayer } from "next-intlayer/server";
 const nextConfig: NextConfig = {
     /* config options here */
     reactCompiler: true,
-
-    async redirects() {
-        return [
+    images: {
+        remotePatterns: [
             {
-                source: "/",
-                destination: "/en",
-                permanent: true,
+                hostname: 'fbtruh896ye6fyjd.public.blob.vercel-storage.com',
+                protocol: 'https',
+                port: '',
+                pathname: '/**',
             },
-        ];
+        ],
     },
 };
 

@@ -1,6 +1,14 @@
-export { intlayerProxy as middleware } from "next-intlayer/proxy";
+import { intlayerMiddleware } from "next-intlayer/middleware";
+
+/**
+ * Next.js 16 Proxy (formerly middleware.ts)
+ * Acts as the network boundary for routing, rewrites, and redirects.
+ */
+
+// Use the built-in Intlayer middleware which handles locale detection and redirects
+export default intlayerMiddleware;
 
 export const config = {
-    matcher:
-        "/((?!api|static|assets|robots|sitemap|sw|service-worker|manifest|.*\\..*|_next).*)",
+    // Matcher ignoring internal Next.js paths, API routes, and static assets
+    matcher: ["/((?!api|static|assets|favicon.ico|_next|robots.txt).*)"],
 };

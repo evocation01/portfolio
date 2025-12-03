@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - '@swc/core'
+  - bufferutil
   - esbuild
   - sharp
   - unrs-resolver

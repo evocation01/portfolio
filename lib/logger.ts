@@ -17,7 +17,11 @@ const logger = winston.createLogger({
     format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), json()),
     transports: [
         // In production, we can add file transports or external logging services here
-        // new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+        new winston.transports.File({
+            filename: "logs/error.log",
+            level: "error",
+        }),
+        new winston.transports.File({ filename: "logs/app.log" }),
     ],
 });
 
