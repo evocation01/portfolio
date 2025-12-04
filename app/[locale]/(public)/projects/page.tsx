@@ -1,21 +1,35 @@
 // app/[locale]/(public)/projects/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/schema";
-import { desc } from "drizzle-orm";
+import { count, desc } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function ProjectsPage(
-    props: {
-        params: Promise<{ locale: string }>;
-    }
-) {
-    const params = await props.params;
-    const allProjects = await db
-        .select()
-        .from(projects)
-        .orderBy(desc(projects.createdAt));
+const PROJECTS_PER_PAGE = 6;
+
+export default async function ProjectsPage({
+    params,
+    searchParams,
+}: {
+    params: { locale: string };
+    searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+    const page = Number(searchParams?.page || 1);
+    const offset = (page - 1) * PROJECTS_PER_PAGE;
+
+    const [allProjects, total] = await Promise.all([
+        db
+            .select()
+            .from(projects)
+            .orderBy(desc(projects.createdAt))
+            .limit(PROJECTS_PER_PAGE)
+            .offset(offset),
+        db.select({ count: count() }).from(projects),
+    ]);
+
+    const totalPages = Math.ceil(total[0].count / PROJECTS_PER_PAGE);
 
     return (
         <div className="container mx-auto py-10 px-4">
@@ -75,6 +89,9 @@ export default async function ProjectsPage(
                     </div>
                 )}
             </div>
+            {totalPages > 1 && (
+                <Pagination currentPage={page} totalPages={totalPages} />
+            )}
         </div>
     );
 }

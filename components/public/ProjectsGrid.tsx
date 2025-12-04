@@ -11,7 +11,7 @@ export async function ProjectsGrid() {
         .from(projects)
         .where(eq(projects.showOnHomepage, true))
         .orderBy(desc(projects.createdAt))
-        .limit(3);
+        .limit(6);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mt-12">
