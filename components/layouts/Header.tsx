@@ -28,6 +28,12 @@ export function Header() {
                     Projects
                 </LocalizedLink>
                 <LocalizedLink
+                    href="/about"
+                    className="text-sm font-medium hover:underline"
+                >
+                    About
+                </LocalizedLink>
+                <LocalizedLink
                     href="/contact"
                     className="text-sm font-medium hover:underline"
                 >
