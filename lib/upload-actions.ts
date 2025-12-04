@@ -23,6 +23,7 @@ export async function uploadImage(formData: FormData) {
     try {
         const blob = await put(file.name, file, {
             access: "public",
+            addRandomSuffix: true,
         });
 
         logger.info("Image uploaded successfully", { url: blob.url });

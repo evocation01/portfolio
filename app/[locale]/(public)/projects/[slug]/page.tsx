@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Github } from "lucide-react";
+import remarkGfm from 'remark-gfm';
 
 // This page needs to determine the locale to show the correct content.
 // It gets the locale from the `params` object provided by Next.js.
@@ -32,6 +33,9 @@ export default async function ProjectDetailPage(
             ? project.description_tr
             : project.description_en;
     const body = params.locale === "tr" ? project.body_tr : project.body_en;
+
+    // Debugging: Log the body content to the server console
+    console.log("Markdown Body Content:", body);
 
     return (
         <article className="max-w-4xl mx-auto py-10 px-4">
@@ -74,7 +78,7 @@ export default async function ProjectDetailPage(
             </header>
 
             <div className="prose prose-lg dark:prose-invert max-w-none">
-                <ReactMarkdown>{body}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
             </div>
         </article>
     );
