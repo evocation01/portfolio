@@ -1,7 +1,7 @@
 // components/public/ProjectsGrid.tsx
 import { db } from "@/lib/db";
 import { projects } from "@/lib/schema";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { ProjectCard } from "./ProjectCard";
 
 export async function ProjectsGrid() {
@@ -9,6 +9,7 @@ export async function ProjectsGrid() {
     const latestProjects = await db
         .select()
         .from(projects)
+        .where(eq(projects.showOnHomepage, true))
         .orderBy(desc(projects.createdAt))
         .limit(3);
 

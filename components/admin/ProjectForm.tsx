@@ -13,12 +13,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { deleteImage, uploadImage } from "@/lib/upload-actions";
 import { type projects } from "@/lib/schema";
 import { Loader2, Save, Trash2, UploadCloud } from "lucide-react";
 import Image from "next/image";
 import { useActionState, useState, useTransition } from "react";
+import { MarkdownEditor } from "./MarkdownEditor";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 type Project = typeof projects.$inferSelect;
 
@@ -51,6 +53,7 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
         github_url: project?.github_url ?? "",
         live_url: project?.live_url ?? "",
         thumbnail_url: project?.thumbnail_url ?? "",
+        showOnHomepage: project?.showOnHomepage ?? false,
     });
 
     const [state, formAction] = useActionState(serverAction, {
@@ -97,11 +100,20 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
         }
     };
 
+    const handleSwitchChange = (checked: boolean) => {
+        setFormData((prev) => ({ ...prev, showOnHomepage: checked }));
+    };
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formDataObj = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
-            formDataObj.append(key, value || "");
+            // Append boolean as string, will be coerced by Zod
+            if (typeof value === "boolean") {
+                formDataObj.append(key, String(value));
+            } else {
+                formDataObj.append(key, value || "");
+            }
         });
         if (isEditMode) {
             formDataObj.append("id", String(project.id));
@@ -175,6 +187,19 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                         </div>
                     </div>
 
+                    {/* Show on Homepage Toggle */}
+                    <div className="flex items-center space-x-2 pt-4">
+                        <Switch
+                            id="showOnHomepage"
+                            name="showOnHomepage"
+                            checked={formData.showOnHomepage}
+                            onCheckedChange={handleSwitchChange}
+                        />
+                        <Label htmlFor="showOnHomepage">
+                            Show on Homepage
+                        </Label>
+                    </div>
+
                     {/* Global Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -187,18 +212,13 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                                 onChange={handleInputChange}
                                 required
                             />
-                            {state?.errors?.slug && (
-                                <p className="text-sm text-destructive">
-                                    {state.errors.slug}
-                                </p>
-                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tags">Tags (comma separated)</Label>
                             <Input
                                 id="tags"
                                 name="tags"
-                                placeholder="React, Next.js, TypeScript"
+                                placeholder="React, Next.js, Drizzle"
                                 value={formData.tags}
                                 onChange={handleInputChange}
                             />
@@ -234,7 +254,6 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                             <TabsTrigger value="tr">Turkish 🇹🇷</TabsTrigger>
                         </TabsList>
 
-                        {/* English Content */}
                         <TabsContent value="en" className="space-y-4 mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title_en">Title (EN)</Label>
@@ -246,11 +265,6 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                                     onChange={handleInputChange}
                                     required
                                 />
-                                {state?.errors?.title_en && (
-                                    <p className="text-sm text-destructive">
-                                        {state.errors.title_en}
-                                    </p>
-                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description_en">
@@ -264,27 +278,18 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                                     onChange={handleInputChange}
                                     required
                                 />
-                                {state?.errors?.description_en && (
-                                    <p className="text-sm text-destructive">
-                                        {state.errors.description_en}
-                                    </p>
-                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="body_en">Full Body (EN)</Label>
-                                <Textarea
+                                <MarkdownEditor
                                     id="body_en"
                                     name="body_en"
-                                    className="min-h-[200px] font-mono"
-                                    placeholder="Markdown supported content..."
                                     value={formData.body_en}
                                     onChange={handleInputChange}
-                                    required
                                 />
                             </div>
                         </TabsContent>
 
-                        {/* Turkish Content */}
                         <TabsContent value="tr" className="space-y-4 mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title_tr">Title (TR)</Label>
@@ -312,14 +317,11 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="body_tr">Full Body (TR)</Label>
-                                <Textarea
+                                <MarkdownEditor
                                     id="body_tr"
                                     name="body_tr"
-                                    className="min-h-[200px] font-mono"
-                                    placeholder="Markdown destekli içerik..."
                                     value={formData.body_tr}
                                     onChange={handleInputChange}
-                                    required
                                 />
                             </div>
                         </TabsContent>

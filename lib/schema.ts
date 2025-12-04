@@ -1,5 +1,6 @@
 // lib/schema.ts
 import {
+    boolean,
     integer,
     pgTable,
     primaryKey,
@@ -24,6 +25,7 @@ export const projects = pgTable("projects", {
     live_url: varchar("live_url", { length: 255 }),
     thumbnail_url: varchar("thumbnail_url", { length: 255 }),
     createdAt: timestamp("created_at").defaultNow(),
+    showOnHomepage: boolean("show_on_homepage").default(false).notNull(),
 });
 
 export const users = pgTable("users", {
