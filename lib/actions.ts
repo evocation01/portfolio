@@ -25,6 +25,7 @@ const ProjectSchema = z.object({
     github_url: z.string().url().optional().or(z.literal("")),
     live_url: z.string().url().optional().or(z.literal("")),
     thumbnail_url: z.string().url().optional().or(z.literal("")),
+    showOnHomepage: z.coerce.boolean(),
     // Transform "tag1, tag2" string into array ["tag1", "tag2"]
     tags: z.string().transform((str) =>
         str
@@ -67,6 +68,7 @@ export async function createProject(prevState: any, formData: FormData) {
             github_url: data.github_url || null,
             live_url: data.live_url || null,
             thumbnail_url: data.thumbnail_url || null,
+            showOnHomepage: data.showOnHomepage,
             tags: data.tags,
         });
 
@@ -125,6 +127,7 @@ export async function updateProject(prevState: any, formData: FormData) {
                 github_url: data.github_url || null,
                 live_url: data.live_url || null,
                 thumbnail_url: data.thumbnail_url || null,
+                showOnHomepage: data.showOnHomepage,
                 tags: data.tags,
             })
             .where(eq(projects.id, data.id));

@@ -2,7 +2,6 @@
 import { DeleteProjectButton } from "./DeleteProjectButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { deleteProject } from "@/app/actions/deleteProject";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/schema";
 import { desc } from "drizzle-orm";
@@ -112,7 +111,6 @@ export async function ProjectsList() {
                                             </Button>
                                             <DeleteProjectButton
                                                 projectId={project.id}
-                                                serverAction={deleteProject}
                                             />
                                         </div>
                                     </div>
