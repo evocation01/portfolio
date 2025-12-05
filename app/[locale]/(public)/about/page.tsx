@@ -1,80 +1,125 @@
 // app/[locale]/(public)/about/page.tsx
+"use client";
+
+import { ResumeViewer } from "@/components/ResumeViewer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useIntlayer } from "next-intlayer";
 
-export default function AboutPage() {
-    // Placeholder data - you can replace this with your actual information
-    const skills = [
+// Data sourced from docs/041225_CV.md
+const cvData = {
+    name: "Hakan İspir",
+    skills: [
+        "Python",
+        "JavaScript",
         "TypeScript",
+        "R",
+        "Java",
+        "SQL",
         "React",
         "Next.js",
-        "Node.js",
-        "Drizzle ORM",
-        "PostgreSQL",
+        "HTML5",
         "Tailwind CSS",
-        "GraphQL",
-        "Docker",
-    ];
-
-    const experience = [
+        "Node.js",
+        "Express",
+        "FastAPI",
+        "PostgreSQL (Neon)",
+        "Drizzle ORM",
+        "PyTorch",
+        "TensorFlow",
+        "Keras",
+        "Pandas",
+        "NumPy",
+        "Scikit-learn",
+        "Microsoft Excel",
+        "Power BI",
+        "Google Looker Studio",
+    ],
+    experience: [
         {
-            company: "Tech Solutions Inc.",
-            role: "Senior Full-Stack Developer",
-            period: "2021 - Present",
+            company: "Koru Impact",
+            role: "Founding Software Engineer",
+            period: "Sept 2025 – Current",
             description:
-                "Led the development of a high-traffic e-commerce platform using Next.js and a serverless backend. Implemented a new design system with Shadcn UI and optimized database queries, reducing page load times by 40%.",
+                "Architecting data infrastructure and ETL services with Python/GCloud, building a full-stack analytics dashboard, and integrating AI capabilities for predictive modeling.",
         },
         {
-            company: "Innovate Co.",
-            role: "Software Engineer",
-            period: "2019 - 2021",
+            company: "Koru Impact",
+            role: "Software Engineer Intern",
+            period: "July 2025 – Sept 2025",
             description:
-                "Developed and maintained client-facing web applications using React and Node.js. Contributed to a large-scale migration from a monolithic architecture to a microservices-based approach.",
+                "Built the core SaaS platform using Next.js, engineered a CI/CD pipeline on GCP, and developed advanced features like a custom CMS with an AI editor and a Gemini chatbot.",
         },
-    ];
+        {
+            company: "Gini Talent",
+            role: "Data Entry / Search Quality Improvement Specialist (Freelance)",
+            period: "2024 – 2025",
+            description:
+                "Optimized search quality for global search engines by analyzing text data and improving content ranking algorithms.",
+        },
+    ],
+    education: {
+        institution: "Marmara University",
+        degree: "Bachelors of Industrial Engineering",
+        period: "2022 – 2026",
+    },
+    licenses: [
+        "Deep Learning with PyTorch, Keras and Tensorflow - Professional Certificate (IBM-Coursera)",
+        "IT Automation with Python - Professional Certificate (Google-Coursera)",
+        "Front-End Developer - Professional Certificate (Meta-Coursera)",
+        "ODOO ERP Program Training (Marmara University)",
+        "Traditional & Advanced Entrepreneurship Trainings (KOSGEB)",
+    ],
+    languages: [
+        "Turkish (Native)",
+        "English (Fluent, C1/C2)",
+        "Spanish (Intermediate, A2/B1)",
+        "German (Basics, A1/A2)",
+    ],
+    volunteering: [
+        "DSC Development Committee (Member): 2023-2025",
+        "MACSEC Career Committee (Member): 2023-2025",
+        "IEEE CS Committee (Member): 2023-2025",
+        "MieS Committee (Member): 2022-2023",
+    ],
+};
 
-    const education = {
-        institution: "University of Technology",
-        degree: "Bachelor of Science in Computer Science",
-        period: "2015 - 2019",
-    };
+export default function AboutPage() {
+    const { title, description } = useIntlayer("homepage");
+    const aboutContent = useIntlayer("about");
 
     return (
         <div className="max-w-4xl mx-auto py-10 px-4">
             <header className="flex flex-col md:flex-row items-center gap-8 mb-12">
-                <Avatar className="h-24 w-24">
-                    <AvatarImage src="/placeholder.svg" alt="Hakan" />
+                <Avatar className="h-16 w-16">
+                    <AvatarImage src="/assets/headshot.jpg" alt={cvData.name} />
                     <AvatarFallback>HI</AvatarFallback>
                 </Avatar>
                 <div className="text-center md:text-left">
                     <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                        Hakan Ispir
+                        {cvData.name}
                     </h1>
                     <p className="mt-2 text-xl text-muted-foreground">
-                        Full-Stack Developer & Tech Enthusiast
+                        {aboutContent.jobTitle}
                     </p>
                 </div>
             </header>
 
             <section className="mb-12">
                 <h2 className="text-3xl font-bold mb-4 border-b pb-2">
-                    About Me
+                    {aboutContent.pageTitle}
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                    I am a passionate Full-Stack Developer with a knack for
-                    building robust, scalable, and user-friendly web
-                    applications. With a strong foundation in modern JavaScript
-                    frameworks and a keen eye for detail, I enjoy tackling
-                    complex problems and turning ideas into reality.
+                    {aboutContent.profile}
                 </p>
             </section>
 
             <section className="mb-12">
                 <h2 className="text-3xl font-bold mb-4 border-b pb-2">
-                    Skills
+                    {aboutContent.skillsTitle}
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                    {skills.map((skill) => (
+                    {cvData.skills.map((skill) => (
                         <Badge
                             key={skill}
                             variant="secondary"
@@ -88,11 +133,11 @@ export default function AboutPage() {
 
             <section className="mb-12">
                 <h2 className="text-3xl font-bold mb-4 border-b pb-2">
-                    Work Experience
+                    {aboutContent.experienceTitle}
                 </h2>
                 <div className="space-y-8">
-                    {experience.map((job) => (
-                        <div key={job.company}>
+                    {cvData.experience.map((job) => (
+                        <div key={job.company + job.role}>
                             <h3 className="text-2xl font-semibold">
                                 {job.role}
                             </h3>
@@ -112,23 +157,63 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            <section>
+            <section className="mb-12">
                 <h2 className="text-3xl font-bold mb-4 border-b pb-2">
-                    Education
+                    {aboutContent.educationTitle}
                 </h2>
                 <div>
                     <h3 className="text-2xl font-semibold">
-                        {education.degree}
+                        {cvData.education.degree}
                     </h3>
                     <div className="flex justify-between items-baseline">
                         <p className="font-medium text-primary">
-                            {education.institution}
+                            {cvData.education.institution}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                            {education.period}
+                            {cvData.education.period}
                         </p>
                     </div>
                 </div>
+            </section>
+
+            <section className="mb-12">
+                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                    {aboutContent.licensesTitle}
+                </h2>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    {cvData.licenses.map((license) => (
+                        <li key={license}>{license}</li>
+                    ))}
+                </ul>
+            </section>
+
+            <section className="mb-12">
+                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                    {aboutContent.languagesTitle}
+                </h2>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    {cvData.languages.map((language) => (
+                        <li key={language}>{language}</li>
+                    ))}
+                </ul>
+            </section>
+
+            <section className="mb-12">
+                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                    {aboutContent.volunteeringTitle}
+                </h2>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    {cvData.volunteering.map((role) => (
+                        <li key={role}>{role}</li>
+                    ))}
+                </ul>
+            </section>
+
+            <section>
+                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                    Resume
+                </h2>
+                <ResumeViewer />
             </section>
         </div>
     );
