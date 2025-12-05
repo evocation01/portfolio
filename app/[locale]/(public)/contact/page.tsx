@@ -15,8 +15,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionState, useState, useTransition } from "react";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
+import { useIntlayer } from "next-intlayer";
 
 export default function ContactPage() {
+    const content = useIntlayer("contact-page");
     const [isPending, startTransition] = useTransition();
     const [state, formAction] = useActionState(sendContactEmail, {
         message: "",
@@ -57,25 +59,20 @@ export default function ContactPage() {
         <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] py-10">
             <Card className="w-full max-w-lg">
                 <CardHeader>
-                    <CardTitle className="text-center">Contact Me</CardTitle>
+                    <CardTitle className="text-center">{content.contactMe}</CardTitle>
                     <CardDescription className="text-center">
-                        Have a question or want to work together? Send me a
-                        message!
-                    </CardDescription>
+                        {content.haveAQuestionOrWant}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                     {state.success ? (
                         <div className="flex flex-col items-center justify-center gap-4 py-8">
                             <CheckCircle2 className="h-16 w-16 text-green-500" />
                             <p className="text-lg font-semibold text-center">
-                                Your message has been sent successfully!
-                            </p>
+                                {content.yourMessageHasBeenSent}</p>
                             <p className="text-sm text-muted-foreground text-center">
-                                I'll get back to you as soon as possible.
-                            </p>
+                                {content.illGetBackToYou}</p>
                             <Button onClick={() => window.location.reload()}>
-                                Send another message
-                            </Button>
+                                {content.sendAnotherMessage}</Button>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="grid gap-4">
@@ -84,7 +81,7 @@ export default function ContactPage() {
                                 <Input
                                     id="name"
                                     name="name"
-                                    placeholder="Your Name"
+                                    placeholder={content.yourName.value}
                                     value={formData.name}
                                     onChange={handleInputChange}
                                     required
@@ -133,7 +130,7 @@ export default function ContactPage() {
                                 <Textarea
                                     id="message"
                                     name="message"
-                                    placeholder="Your message here..."
+                                    placeholder={content.yourMessageHere.value}
                                     rows={5}
                                     value={formData.message}
                                     onChange={handleInputChange}
@@ -159,8 +156,7 @@ export default function ContactPage() {
                                 ) : (
                                     <>
                                         <Send className="mr-2 h-4 w-4" />
-                                        Send Message
-                                    </>
+                                        {content.sendMessage}</>
                                 )}
                             </Button>
                         </form>
@@ -168,7 +164,7 @@ export default function ContactPage() {
                 </CardContent>
                 <CardFooter className="flex justify-center">
                     <p className="text-sm text-muted-foreground">
-                        Your message will be sent to{" "}
+                        {content.yourMessageWillBeSent}{" "}
                         <a
                             href="mailto:contact@hakanispir.dev"
                             className="underline"

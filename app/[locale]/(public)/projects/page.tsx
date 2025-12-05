@@ -1,48 +1,80 @@
 // app/[locale]/(public)/projects/page.tsx
+import { ProjectFilters } from "@/components/public/ProjectFilters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/schema";
-import { count, desc } from "drizzle-orm";
+import { and, count, desc, like, or, sql } from "drizzle-orm";
+import { getIntlayer } from "next-intlayer";
 import Image from "next/image";
 import Link from "next/link";
+import projectsContent from "./projects.content";
 
 const PROJECTS_PER_PAGE = 6;
 
-export default async function ProjectsPage({
-    params,
-    searchParams,
-}: {
-    params: { locale: string };
-    searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function ProjectsPage(
+    props: {
+        params: Promise<{ locale: string }>;
+        searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+    }
+) {
+    const searchParams = await props.searchParams;
+    const params = await props.params;
+    const locale = params.locale as "en" | "tr";
+    const content = getIntlayer(projectsContent.key, locale);
+
     const page = Number(searchParams?.page || 1);
+    const tag = (searchParams?.tag as string) || "";
+    const query = (searchParams?.query as string) || "";
     const offset = (page - 1) * PROJECTS_PER_PAGE;
 
-    const [allProjects, total] = await Promise.all([
-        db
-            .select()
-            .from(projects)
-            .orderBy(desc(projects.createdAt))
-            .limit(PROJECTS_PER_PAGE)
-            .offset(offset),
-        db.select({ count: count() }).from(projects),
+    const whereClauses = [];
+    if (tag) {
+        whereClauses.push(sql`${tag} = ANY(projects.tags)`);
+    }
+    if (query) {
+        const searchTerm = `%${query}%`;
+        whereClauses.push(
+            or(
+                like(projects.title_en, searchTerm),
+                like(projects.title_tr, searchTerm),
+                like(projects.description_en, searchTerm),
+                like(projects.description_tr, searchTerm)
+            )!
+        );
+    }
+
+    const where = whereClauses.length > 0 ? sql.join(whereClauses, " AND ") : undefined;
+
+    const [filteredProjects, total, allTagsResult] = await Promise.all([
+        db.query.projects.findMany({
+            where,
+            orderBy: [desc(projects.createdAt)],
+            limit: PROJECTS_PER_PAGE,
+            offset,
+        }),
+        db.select({ count: count() }).from(projects).where(where),
+        db.select({ tags: projects.tags }).from(projects),
     ]);
 
+    const uniqueTags = [...new Set(allTagsResult.flatMap((p) => p.tags || []))];
     const totalPages = Math.ceil(total[0].count / PROJECTS_PER_PAGE);
 
     return (
         <div className="container mx-auto py-10 px-4">
-            <div className="mb-8">
+            <div className="mb-8 text-center">
                 <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                    My Work
+                    {content.pageTitle}
                 </h1>
                 <p className="mt-2 text-lg text-muted-foreground">
-                    A collection of my projects.
+                    {content.pageDescription}
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {allProjects.map((project) => {
+
+            <ProjectFilters allTags={uniqueTags} />
+
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[1vw] gap-y-[3vh]">
+                {filteredProjects.map((project) => {
                     const title =
                         params.locale === "tr"
                             ? project.title_tr
@@ -69,12 +101,12 @@ export default async function ProjectsPage({
                                         />
                                     </div>
                                 )}
-                                <div className="p-4">
+                                <div className="p-6">
                                     <CardHeader className="p-0">
                                         <CardTitle>{title}</CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-0 pt-2">
-                                        <p className="text-sm text-muted-foreground line-clamp-3">
+                                        <p className="text-sm text-muted-foreground line-clamp-5">
                                             {description}
                                         </p>
                                     </CardContent>
@@ -83,12 +115,13 @@ export default async function ProjectsPage({
                         </Link>
                     );
                 })}
-                {allProjects.length === 0 && (
+                {filteredProjects.length === 0 && (
                     <div className="md:col-span-3 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg bg-muted/50">
-                        No projects have been added yet.
+                        {content.noProjects}
                     </div>
                 )}
             </div>
+
             {totalPages > 1 && (
                 <Pagination currentPage={page} totalPages={totalPages} />
             )}

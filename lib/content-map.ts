@@ -1,4 +1,8 @@
-import homePageContent from "@/app/[locale]/homepage.content";
+import aboutContent from "@/app/[locale]/(public)/about/about.content";
+import contactContent from "@/app/[locale]/(public)/contact/contact.content";
+import homePageContent from "@/app/[locale]/(public)/homepage.content";
+import projectsContent from "@/app/[locale]/(public)/projects/projects.content";
+import headerContent from "@/components/layouts/header.content";
 import { Locales } from "intlayer";
 
 type ContentModule = {
@@ -8,6 +12,10 @@ type ContentModule = {
 
 export const routeToContent: Record<string, ContentModule> = {
     "/": homePageContent.content,
+    "/about": aboutContent.content,
+    "/contact": contactContent.content,
+    "/projects": projectsContent.content,
+    "/layout/header": headerContent.content,
 };
 
 export const slugToRoute: Record<string, string> = {};
