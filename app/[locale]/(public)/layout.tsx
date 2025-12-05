@@ -10,7 +10,7 @@ export default function PublicLayout({
     return (
         <>
             <Header />
-            <main className="container mx-auto py-8 px-4 min-h-screen">
+            <main className="mx-auto py-2 px-2 min-h-screen">
                 <PageTransition>{children}</PageTransition>
             </main>
         </>
