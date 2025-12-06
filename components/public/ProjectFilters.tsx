@@ -1,13 +1,21 @@
 "use client";
 
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Search } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 
-export function ProjectFilters({ allTags }: { allTags: string[] }) {
+export function ProjectFilters({
+    allTags,
+    searchPlaceholder,
+    allTagsLabel,
+}: {
+    allTags: string[];
+    searchPlaceholder: string;
+    allTagsLabel: string;
+}) {
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const { replace } = useRouter();
@@ -43,7 +51,7 @@ export function ProjectFilters({ allTags }: { allTags: string[] }) {
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div className="relative w-full md:w-1/3">
                 <Input
-                    placeholder="Search projects..."
+                    placeholder={searchPlaceholder}
                     defaultValue={searchParams.get("query")?.toString()}
                     onChange={(e) => handleSearch(e.target.value)}
                     className="pl-10"
@@ -53,15 +61,21 @@ export function ProjectFilters({ allTags }: { allTags: string[] }) {
             <ScrollArea className="w-full md:w-2/3 whitespace-nowrap">
                 <div className="flex w-max space-x-2">
                     <Button
-                        variant={!searchParams.get("tag") ? "default" : "outline"}
+                        variant={
+                            !searchParams.get("tag") ? "default" : "outline"
+                        }
                         onClick={() => handleTagFilter("")}
                     >
-                        All
+                        {allTagsLabel}
                     </Button>
                     {allTags.map((tag) => (
                         <Button
                             key={tag}
-                            variant={searchParams.get("tag") === tag ? "default" : "outline"}
+                            variant={
+                                searchParams.get("tag") === tag
+                                    ? "default"
+                                    : "outline"
+                            }
                             onClick={() => handleTagFilter(tag)}
                         >
                             {tag}

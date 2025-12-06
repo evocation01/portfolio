@@ -4,7 +4,7 @@ import { projects } from "@/lib/schema";
 import { desc, eq } from "drizzle-orm";
 import { ProjectCard } from "./ProjectCard";
 
-export async function ProjectsGrid() {
+export async function ProjectsGrid({ locale }: { locale: string }) {
     // Fetch top 3 projects for the homepage
     const latestProjects = await db
         .select()
@@ -16,7 +16,11 @@ export async function ProjectsGrid() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mt-12">
             {latestProjects.map((project) => (
-                <ProjectCard project={project} key={project.id} />
+                <ProjectCard
+                    project={project}
+                    key={project.id}
+                    locale={locale}
+                />
             ))}
             {latestProjects.length === 0 && (
                 <div className="md:col-span-3 text-center text-muted-foreground">

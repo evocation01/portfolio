@@ -8,7 +8,17 @@ import Link from "next/link";
 
 type Project = typeof projects.$inferSelect;
 
-export function ProjectCard({ project }: { project: Project }) {
+export function ProjectCard({
+    project,
+    locale,
+}: {
+    project: Project;
+    locale: string;
+}) {
+    const title = locale === "tr" ? project.title_tr : project.title_en;
+    const description =
+        locale === "tr" ? project.description_tr : project.description_en;
+
     return (
         <motion.div
             whileHover={{ scale: 1.03 }}
@@ -23,7 +33,7 @@ export function ProjectCard({ project }: { project: Project }) {
                         <div className="relative w-full aspect-video">
                             <Image
                                 src={project.thumbnail_url}
-                                alt={project.title_en}
+                                alt={title}
                                 fill
                                 className="object-cover"
                             />
@@ -31,11 +41,11 @@ export function ProjectCard({ project }: { project: Project }) {
                     )}
                     <div className="p-4">
                         <CardHeader className="p-0">
-                            <CardTitle>{project.title_en}</CardTitle>
+                            <CardTitle>{title}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0 pt-2">
                             <p className="text-sm text-muted-foreground line-clamp-3">
-                                {project.description_en}
+                                {description}
                             </p>
                         </CardContent>
                     </div>

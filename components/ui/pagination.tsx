@@ -8,15 +8,25 @@ interface PaginationProps {
     currentPage: number;
     totalPages: number;
     baseUrl?: string;
+    previousPage: string;
+    nextPage: string;
+    pageIndicator: string;
 }
 
 export function Pagination({
     currentPage,
     totalPages,
     baseUrl = "/projects",
+    previousPage,
+    nextPage,
+    pageIndicator,
 }: PaginationProps) {
     const hasPreviousPage = currentPage > 1;
     const hasNextPage = currentPage < totalPages;
+
+    const formattedIndicator = pageIndicator
+        .replace("{currentPage}", String(currentPage))
+        .replace("{totalPages}", String(totalPages));
 
     return (
         <div className="flex items-center justify-center space-x-4 mt-12">
@@ -28,11 +38,11 @@ export function Pagination({
                     }
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Previous
+                    {previousPage}
                 </Link>
             </Button>
             <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
+                {formattedIndicator}
             </span>
             <Button variant="outline" asChild disabled={!hasNextPage}>
                 <Link
@@ -41,7 +51,7 @@ export function Pagination({
                         !hasNextPage ? "pointer-events-none opacity-50" : ""
                     }
                 >
-                    Next
+                    {nextPage}
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>
