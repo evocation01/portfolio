@@ -86,3 +86,4 @@ lighthouse-report.html
 .idea/
 *.sublime-project
 *.sublime-workspacenext.config.ts.backup
+.env*.local
