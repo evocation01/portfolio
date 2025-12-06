@@ -1,0 +1,39 @@
+name: Database Backup
+
+on:
+  schedule:
+    # Runs at 03:00 UTC every day
+    - cron: '0 3 * * *'
+  # Allows you to run this workflow manually from the Actions tab for testing
+  workflow_dispatch:
+
+jobs:
+  backup_and_store:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Postgres Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create Backups Directory
+        run: mkdir -p backups
+
+      - name: Run Backup Script
+        env:
+          # We pass the secret from GitHub to the script environment
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: |
+          chmod +x scripts/backup.sh
+          ./scripts/backup.sh
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-backup
+          path: backups/*.gz
+          retention-days: 30
