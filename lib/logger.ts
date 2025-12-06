@@ -12,20 +12,24 @@ const consoleFormat = printf(({ level, message, timestamp, ...metadata }) => {
     return msg;
 });
 
-const transports = [
-    new winston.transports.File({
-        filename: "logs/error.log",
-        level: "error",
-    }),
-    new winston.transports.File({ filename: "logs/app.log" }),
-];
+const transports = [];
 
-// If we're not in production, add the console transport.
+// Always add console transport (for all environments, though it will be less verbose in production)
+transports.push(
+    new winston.transports.Console({
+        format: combine(colorize(), consoleFormat),
+        level: process.env.NODE_ENV === "production" ? "info" : "debug", // Control verbosity in console
+    }) as any
+);
+
+// Add file transports ONLY in non-production environments
 if (process.env.NODE_ENV !== "production") {
     transports.push(
-        new winston.transports.Console({
-            format: combine(colorize(), consoleFormat),
-        }) as any
+        new winston.transports.File({
+            filename: "logs/error.log",
+            level: "error",
+        }),
+        new winston.transports.File({ filename: "logs/app.log" })
     );
 }
 
