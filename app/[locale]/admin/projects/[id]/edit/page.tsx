@@ -5,10 +5,18 @@ import { updateProject } from "@/lib/actions";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { getIntlayer } from "next-intlayer";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import adminContent from "../../../admin.content";
 
-async function EditFormLoader({ projectId }: { projectId: number }) {
+async function EditFormLoader({
+    projectId,
+    content,
+}: {
+    projectId: number;
+    content: any;
+}) {
     const [project] = await db
         .select()
         .from(projects)
@@ -18,7 +26,13 @@ async function EditFormLoader({ projectId }: { projectId: number }) {
         notFound();
     }
 
-    return <ProjectForm project={project} serverAction={updateProject} />;
+    return (
+        <ProjectForm
+            project={project}
+            serverAction={updateProject}
+            content={content}
+        />
+    );
 }
 
 function EditFormSkeleton() {
@@ -40,9 +54,11 @@ function EditFormSkeleton() {
 }
 
 export default async function EditProjectPage(props: {
-    params: Promise<{ id: string }>;
+    params: Promise<{ id: string; locale: string }>;
 }) {
-    const params = await props.params;
+    const params = (await props.params);
+    const content = getIntlayer(adminContent.key, params.locale);
+
     const projectId = Number(params.id);
     // Basic validation, the loader will handle the notFound case
     if (isNaN(projectId)) {
@@ -52,7 +68,7 @@ export default async function EditProjectPage(props: {
     return (
         <div>
             <Suspense fallback={<EditFormSkeleton />}>
-                <EditFormLoader projectId={projectId} />
+                <EditFormLoader projectId={projectId} content={content} />
             </Suspense>
         </div>
     );

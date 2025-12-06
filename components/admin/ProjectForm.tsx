@@ -33,9 +33,10 @@ type ProjectServerAction = (
 interface ProjectFormProps {
     project?: Project;
     serverAction: ProjectServerAction;
+    content: any;
 }
 
-export function ProjectForm({ project, serverAction }: ProjectFormProps) {
+export function ProjectForm({ project, serverAction, content }: ProjectFormProps) {
     const [isPending, startTransition] = useTransition();
     const [uploading, setUploading] = useState(false);
 
@@ -128,25 +129,25 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
             <Card className="w-full max-w-4xl mx-auto">
                 <CardHeader>
                     <CardTitle>
-                        {isEditMode ? "Edit Project" : "Create New Project"}
+                        {isEditMode ? content.editProjectTitle : content.createProjectTitle}
                     </CardTitle>
                     <CardDescription>
                         {isEditMode
-                            ? "Update the details of your existing project."
-                            : "Add a new project to your portfolio."}
+                            ? content.editProjectDescription
+                            : content.createProjectDescription}
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-6">
                     {/* Thumbnail Uploader */}
                     <div className="space-y-2">
-                        <Label>Thumbnail Image</Label>
+                        <Label>{content.thumbnailLabel}</Label>
                         <div className="flex items-center gap-4">
                             {formData.thumbnail_url ? (
                                 <div className="relative group">
                                     <Image
                                         src={formData.thumbnail_url}
-                                        alt="Thumbnail preview"
+                                        alt={content.thumbnailAlt}
                                         width={80}
                                         height={80}
                                         className="rounded-md object-cover w-20 h-20"
@@ -164,7 +165,7 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                             ) : (
                                 <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
                                     <p className="text-xs text-muted-foreground">
-                                        No Image
+                                        {content.noImage}
                                     </p>
                                 </div>
                             )}
@@ -196,29 +197,29 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                             onCheckedChange={handleSwitchChange}
                         />
                         <Label htmlFor="showOnHomepage">
-                            Show on Homepage
+                            {content.showOnHomepageLabel}
                         </Label>
                     </div>
 
                     {/* Global Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="slug">Slug (URL)</Label>
+                            <Label htmlFor="slug">{content.slugLabel}</Label>
                             <Input
                                 id="slug"
                                 name="slug"
-                                placeholder="my-awesome-project"
+                                placeholder={content.slugPlaceholder.value}
                                 value={formData.slug}
                                 onChange={handleInputChange}
                                 required
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="tags">Tags (comma separated)</Label>
+                            <Label htmlFor="tags">{content.tagsLabel}</Label>
                             <Input
                                 id="tags"
                                 name="tags"
-                                placeholder="React, Next.js, Drizzle"
+                                placeholder={content.tagsPlaceholder.value}
                                 value={formData.tags}
                                 onChange={handleInputChange}
                             />
@@ -226,21 +227,21 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="github_url">GitHub URL</Label>
+                            <Label htmlFor="github_url">{content.githubUrlLabel}</Label>
                             <Input
                                 id="github_url"
                                 name="github_url"
-                                placeholder="https://github.com/..."
+                                placeholder={content.githubUrlPlaceholder.value}
                                 value={formData.github_url}
                                 onChange={handleInputChange}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="live_url">Live URL</Label>
+                            <Label htmlFor="live_url">{content.liveUrlLabel}</Label>
                             <Input
                                 id="live_url"
                                 name="live_url"
-                                placeholder="https://..."
+                                placeholder={content.liveUrlPlaceholder.value}
                                 value={formData.live_url}
                                 onChange={handleInputChange}
                             />
@@ -250,17 +251,17 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                     {/* Bilingual Content Tabs */}
                     <Tabs defaultValue="en" className="w-full mt-6">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="en">English 🇬🇧</TabsTrigger>
-                            <TabsTrigger value="tr">Turkish 🇹🇷</TabsTrigger>
+                            <TabsTrigger value="en">{content.englishTab}</TabsTrigger>
+                            <TabsTrigger value="tr">{content.turkishTab}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="en" className="space-y-4 mt-4">
                             <div className="space-y-2">
-                                <Label htmlFor="title_en">Title (EN)</Label>
+                                <Label htmlFor="title_en">{content.titleEnLabel}</Label>
                                 <Input
                                     id="title_en"
                                     name="title_en"
-                                    placeholder="Project Title"
+                                    placeholder={content.titleEnPlaceholder.value}
                                     value={formData.title_en}
                                     onChange={handleInputChange}
                                     required
@@ -268,19 +269,19 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description_en">
-                                    Short Description (EN)
+                                    {content.descriptionEnLabel}
                                 </Label>
                                 <Textarea
                                     id="description_en"
                                     name="description_en"
-                                    placeholder="Brief summary for the card view..."
+                                    placeholder={content.descriptionPlaceholder.value}
                                     value={formData.description_en}
                                     onChange={handleInputChange}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="body_en">Full Body (EN)</Label>
+                                <Label htmlFor="body_en">{content.bodyEnLabel}</Label>
                                 <MarkdownEditor
                                     id="body_en"
                                     name="body_en"
@@ -292,11 +293,11 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
 
                         <TabsContent value="tr" className="space-y-4 mt-4">
                             <div className="space-y-2">
-                                <Label htmlFor="title_tr">Title (TR)</Label>
+                                <Label htmlFor="title_tr">{content.titleTrLabel}</Label>
                                 <Input
                                     id="title_tr"
                                     name="title_tr"
-                                    placeholder="Proje Başlığı"
+                                    placeholder={content.titleEnPlaceholder.value}
                                     value={formData.title_tr}
                                     onChange={handleInputChange}
                                     required
@@ -304,19 +305,19 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description_tr">
-                                    Short Description (TR)
+                                    {content.descriptionTrLabel}
                                 </Label>
                                 <Textarea
                                     id="description_tr"
                                     name="description_tr"
-                                    placeholder="Kart görünümü için kısa özet..."
+                                    placeholder={content.descriptionPlaceholder.value}
                                     value={formData.description_tr}
                                     onChange={handleInputChange}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="body_tr">Full Body (TR)</Label>
+                                <Label htmlFor="body_tr">{content.bodyTrLabel}</Label>
                                 <MarkdownEditor
                                     id="body_tr"
                                     name="body_tr"
@@ -334,18 +335,18 @@ export function ProjectForm({ project, serverAction }: ProjectFormProps) {
                         type="button"
                         onClick={() => history.back()}
                     >
-                        Cancel
+                        {content.cancelButton}
                     </Button>
                     <Button type="submit" disabled={isPending || uploading}>
                         {isPending ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Saving...
+                                {content.savingButton}
                             </>
                         ) : (
                             <>
                                 <Save className="mr-2 h-4 w-4" />
-                                {isEditMode ? "Update Project" : "Create Project"}
+                                {isEditMode ? content.updateButton : content.createButton}
                             </>
                         )}
                     </Button>

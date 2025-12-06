@@ -9,7 +9,8 @@ import { Edit, ExternalLink, Github, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export async function ProjectsList() {
+
+export async function ProjectsList({ content }: { content: any }) {
     const allProjects = await db
         .select()
         .from(projects)
@@ -19,24 +20,24 @@ export async function ProjectsList() {
         <>
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold">
-                    Existing Projects ({allProjects.length})
+                    {content.existingProjects} ({allProjects.length})
                 </h3>
                 <Button asChild>
                     <Link
                         href="/admin/projects/create"
                         className="flex items-center gap-2"
                     >
-                        <Plus className="h-4 w-4" /> Add New Project
+                        <Plus className="h-4 w-4" /> {content.addNewProject}
                     </Link>
                 </Button>
             </div>
 
             {allProjects.length === 0 ? (
                 <div className="mt-8 col-span-full flex flex-col items-center justify-center py-16 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/50">
-                    <p>No projects found.</p>
+                    <p>{content.noProjectsFound}</p>
                     <Button variant="link" asChild>
                         <Link href="/admin/projects/create">
-                            Create your first one
+                            {content.createFirstProject}
                         </Link>
                     </Button>
                 </div>
@@ -106,11 +107,14 @@ export async function ProjectsList() {
                                                     href={`/admin/projects/${project.id}/edit`}
                                                 >
                                                     <Edit className="h-3 w-3 mr-1" />{" "}
-                                                    Edit
+                                                    {content.editButton}
                                                 </Link>
                                             </Button>
                                             <DeleteProjectButton
                                                 projectId={project.id}
+                                                deleteButtonText={content.deleteButton}
+                                                deletingButtonText={content.deletingButton}
+                                                deleteConfirmationText={content.deleteConfirmation}
                                             />
                                         </div>
                                     </div>

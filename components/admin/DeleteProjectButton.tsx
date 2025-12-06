@@ -13,7 +13,17 @@ type DeleteActionState = {
     success?: boolean;
 };
 
-export function DeleteProjectButton({ projectId }: { projectId: number }) {
+export function DeleteProjectButton({
+    projectId,
+    deleteButtonText,
+    deletingButtonText,
+    deleteConfirmationText,
+}: {
+    projectId: number;
+    deleteButtonText: string;
+    deletingButtonText: string;
+    deleteConfirmationText: string;
+}) {
     // useActionState to get state from the server action
     const [state, formAction, isPending] = useActionState<
         DeleteActionState, // Type of the state
@@ -40,7 +50,7 @@ export function DeleteProjectButton({ projectId }: { projectId: number }) {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         // Only prevent default if the user cancels the confirmation
-        if (!confirm("Are you sure you want to delete this project?")) {
+        if (!confirm(deleteConfirmationText)) {
             event.preventDefault();
         }
         // If confirmed, the form will submit normally,
@@ -58,7 +68,7 @@ export function DeleteProjectButton({ projectId }: { projectId: number }) {
                 className="h-8"
             >
                 <Trash2 className="h-3 w-3 mr-1" />
-                {isPending ? "Deleting..." : "Delete"}
+                {isPending ? deletingButtonText : deleteButtonText}
             </Button>
         </form>
     );

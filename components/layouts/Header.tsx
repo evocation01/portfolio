@@ -57,7 +57,11 @@ export function Header() {
                         </Button>
                     </>
                 ) : (
-                    <Button onClick={() => signIn()}>{content.login}</Button>
+                    <Button asChild>
+                        <LocalizedLink href="/login">
+                            {content.login}
+                        </LocalizedLink>
+                    </Button>
                 )}
                 <LanguageSwitcher />
                 <ThemeSwitcher />
