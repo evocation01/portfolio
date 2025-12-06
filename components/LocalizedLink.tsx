@@ -1,10 +1,11 @@
 "use client";
 
-import { useLocale } from "next-intlayer";
+import { getCustomLocalizedUrl } from "@/lib/getCustomLocalizedUrl"; // New import
+import { usePathnameLocale } from "@/hooks/usePathnameLocale";
+import config from "@/intlayer.config";
+import type { Locale } from "intlayer";
 import Link from "next/link";
 import { type ComponentProps, forwardRef } from "react";
-import type { Locale } from "intlayer";
-import config from "@/intlayer.config";
 
 type LocalizedLinkProps = ComponentProps<typeof Link> & {
     locale?: Locale;
@@ -12,30 +13,16 @@ type LocalizedLinkProps = ComponentProps<typeof Link> & {
 
 export const LocalizedLink = forwardRef<HTMLAnchorElement, LocalizedLinkProps>(
     ({ href, locale, ...props }, ref) => {
-        const { locale: currentLocale } = useLocale();
+        const currentLocale = usePathnameLocale();
         const targetLocale = locale || currentLocale;
-        const defaultLocale =
-            config.internationalization?.defaultLocale ?? "en";
+        // The defaultLocale is handled within getCustomLocalizedUrl now.
 
-        const path =
-            typeof href === "string" ? href : href.pathname || "";
+        const path = typeof href === "string" ? href : href.pathname || "";
 
-        // Prepend locale prefix only if it's not the default locale
-        const finalHref =
-            targetLocale !== defaultLocale ? `/${targetLocale}${path}` : path;
+        // Construct the final URL using the new helper
+        const finalPath = getCustomLocalizedUrl(path, targetLocale);
 
-        // Next.js Link requires href to be a single string. Handle root path correctly.
-        const finalPath = finalHref.startsWith("//")
-            ? finalHref.substring(1)
-            : finalHref;
-
-        return (
-            <Link
-                href={finalPath || "/"}
-                {...props}
-                ref={ref}
-            />
-        );
+        return <Link href={finalPath || "/"} {...props} ref={ref} />;
     }
 );
 

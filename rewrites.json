@@ -1,0 +1,18 @@
+[
+  {
+    "source": "/tr/hakkimda",
+    "destination": "/tr/about"
+  },
+  {
+    "source": "/tr/iletisim",
+    "destination": "/tr/contact"
+  },
+  {
+    "source": "/tr/projeler",
+    "destination": "/tr/projects"
+  },
+  {
+    "source": "/tr/giris",
+    "destination": "/tr/login"
+  }
+]
