@@ -4,10 +4,49 @@ import { ProjectsGrid } from "@/components/public/ProjectsGrid";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
+import type { Metadata, Viewport } from "next";
 import { getIntlayer } from "next-intlayer";
 import Image from "next/image";
 import { Suspense } from "react";
 import homepageContent from "./homepage.content";
+
+export async function generateMetadata(
+    { params }: { params: Promise<{ locale: string }> }
+): Promise<Metadata> {
+    const awaitedParams = await params;
+
+    const content = getIntlayer(homepageContent.key, awaitedParams.locale);
+    const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    const getLocalizedUrl = (locale: string) => {
+        if (locale === "en") {
+            return baseUrl;
+        }
+        return `${baseUrl}/${locale}`;
+    };
+
+    return {
+        title: content.metaTitle.value,
+        description: content.metaDescription.value,
+        alternates: {
+            canonical: getLocalizedUrl(awaitedParams.locale),
+            languages: {
+                en: getLocalizedUrl("en"),
+                tr: getLocalizedUrl("tr"),
+                "x-default": getLocalizedUrl("en"),
+            },
+        },
+    };
+}
+
+export function generateViewport(): Viewport {
+    return {
+        width: "device-width",
+        initialScale: 1,
+        maximumScale: 1,
+    };
+}
 
 function ProjectsGridSkeleton() {
     return (
@@ -19,11 +58,10 @@ function ProjectsGridSkeleton() {
     );
 }
 
-export default async function HomePage(props: {
-    params: Promise<{ locale: string }>;
-}) {
+export default async function HomePage(props: { params: Promise<{ locale: string }> }) {
     const params = await props.params;
-    const content = getIntlayer(homepageContent.key, params.locale);
+    const awaitedParams = await params;
+    const content = getIntlayer(homepageContent.key, awaitedParams.locale);
 
     return (
         <>
@@ -34,7 +72,7 @@ export default async function HomePage(props: {
                         <div className="w-32 h-32 rounded-full p-1 border-2 border-primary">
                             <Image
                                 src="/assets/headshot.jpg"
-                                alt="Hakan Ispir"
+                                alt={content.headshotAlt}
                                 width={128}
                                 height={128}
                                 className="rounded-full object-cover"
@@ -75,14 +113,14 @@ export default async function HomePage(props: {
                             className="absolute right-0"
                         >
                             <LocalizedLink href="/projects">
-                                More Projects
+                                {content.moreProjects}
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </LocalizedLink>
                         </Button>
                     </div>
                     <Suspense fallback={<ProjectsGridSkeleton />}>
                         <div className="max-w-7xl mx-auto">
-                            <ProjectsGrid />
+                            <ProjectsGrid locale={params.locale} />
                         </div>
                     </Suspense>
                 </div>
