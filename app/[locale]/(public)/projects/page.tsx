@@ -4,11 +4,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/schema";
-import { and, count, desc, like, or, sql } from "drizzle-orm";
+import { and, count, desc, ilike, or, sql } from "drizzle-orm";
+import type { Metadata, Viewport } from "next";
 import { getIntlayer } from "next-intlayer";
 import Image from "next/image";
 import Link from "next/link";
 import projectsContent from "./projects.content";
+
+export async function generateMetadata(
+    { params }: { params: Promise<{ locale: string }> }
+): Promise<Metadata> {
+    const awaitedParams = await params;
+    const content = getIntlayer(projectsContent.key, awaitedParams.locale);
+    const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    const getLocalizedUrl = (locale: string) => {
+        if (locale === "en") {
+            return `${baseUrl}/projects`;
+        }
+        return `${baseUrl}/${locale}/projects`;
+    };
+
+    return {
+        title: content.metaTitle.value,
+        description: content.metaDescription.value,
+        alternates: {
+            canonical: getLocalizedUrl(awaitedParams.locale),
+            languages: {
+                en: getLocalizedUrl("en"),
+                tr: getLocalizedUrl("tr"),
+                "x-default": getLocalizedUrl("en"),
+            },
+        },
+    };
+}
+
+export function generateViewport(): Viewport {
+    return {
+        width: "device-width",
+        initialScale: 1,
+        maximumScale: 1,
+    };
+}
 
 const PROJECTS_PER_PAGE = 6;
 
@@ -20,7 +58,8 @@ export default async function ProjectsPage(
 ) {
     const searchParams = await props.searchParams;
     const params = await props.params;
-    const locale = params.locale as "en" | "tr";
+    const awaitedParams = await params;
+    const locale = awaitedParams.locale as "en" | "tr";
     const content = getIntlayer(projectsContent.key, locale);
 
     const page = Number(searchParams?.page || 1);
@@ -36,15 +75,15 @@ export default async function ProjectsPage(
         const searchTerm = `%${query}%`;
         whereClauses.push(
             or(
-                like(projects.title_en, searchTerm),
-                like(projects.title_tr, searchTerm),
-                like(projects.description_en, searchTerm),
-                like(projects.description_tr, searchTerm)
+                ilike(projects.title_en, searchTerm),
+                ilike(projects.title_tr, searchTerm),
+                ilike(projects.description_en, searchTerm),
+                ilike(projects.description_tr, searchTerm)
             )!
         );
     }
 
-    const where = whereClauses.length > 0 ? sql.join(whereClauses, " AND ") : undefined;
+    const where = whereClauses.length > 0 ? and(...whereClauses) : undefined;
 
     const [filteredProjects, total, allTagsResult] = await Promise.all([
         db.query.projects.findMany({
@@ -71,7 +110,11 @@ export default async function ProjectsPage(
                 </p>
             </div>
 
-            <ProjectFilters allTags={uniqueTags} />
+            <ProjectFilters
+                allTags={uniqueTags}
+                searchPlaceholder={content.searchPlaceholder.value}
+                allTagsLabel={content.allTags}
+            />
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[1vw] gap-y-[3vh]">
                 {filteredProjects.map((project) => {
@@ -123,7 +166,13 @@ export default async function ProjectsPage(
             </div>
 
             {totalPages > 1 && (
-                <Pagination currentPage={page} totalPages={totalPages} />
+                <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    previousPage={content.previousPage}
+                    nextPage={content.nextPage}
+                    pageIndicator={content.pageIndicator}
+                />
             )}
         </div>
     );

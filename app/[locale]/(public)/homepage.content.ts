@@ -3,6 +3,14 @@ import { t, type Dictionary } from "intlayer";
 const homepageContent = {
     key: "homepage",
     content: {
+        metaTitle: t({
+            en: "Homepage",
+            tr: "Anasayfa",
+        }),
+        metaDescription: t({
+            en: "Hakan İspir's personal portfolio website, featuring projects in full-stack development, AI engineering, and data science.",
+            tr: "Hakan İspir'in kişisel portfolyo web sitesi; full-stack geliştirme, yapay zeka mühendisliği ve veri bilimi projelerini içermektedir.",
+        }),
         title: t({
             en: "Hakan İspir",
             tr: "Hakan İspir",
@@ -26,6 +34,14 @@ const homepageContent = {
         featuredProjects: t({
             en: "Featured Projects",
             tr: "Öne Çıkan Projeler",
+        }),
+        moreProjects: t({
+            en: "More Projects",
+            tr: "Daha Fazla Proje",
+        }),
+        headshotAlt: t({
+            en: "Hakan Ispir headshot",
+            tr: "Hakan İspir vesikalık",
         }),
     },
 } satisfies Dictionary;
