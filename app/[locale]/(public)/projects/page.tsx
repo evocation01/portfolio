@@ -103,17 +103,17 @@ export default async function ProjectsPage(
         <div className="container mx-auto py-10 px-4">
             <div className="mb-8 text-center">
                 <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                    {content.pageTitle}
+                    {content.pageTitle.value}
                 </h1>
                 <p className="mt-2 text-lg text-muted-foreground">
-                    {content.pageDescription}
+                    {content.pageDescription.value}
                 </p>
             </div>
 
             <ProjectFilters
                 allTags={uniqueTags}
                 searchPlaceholder={content.searchPlaceholder.value}
-                allTagsLabel={content.allTags}
+                allTagsLabel={content.allTags.value}
             />
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[1vw] gap-y-[3vh]">
@@ -160,7 +160,7 @@ export default async function ProjectsPage(
                 })}
                 {filteredProjects.length === 0 && (
                     <div className="md:col-span-3 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg bg-muted/50">
-                        {content.noProjects}
+                        {content.noProjects.value}
                     </div>
                 )}
             </div>
@@ -169,9 +169,9 @@ export default async function ProjectsPage(
                 <Pagination
                     currentPage={page}
                     totalPages={totalPages}
-                    previousPage={content.previousPage}
-                    nextPage={content.nextPage}
-                    pageIndicator={content.pageIndicator}
+                    previousPage={content.previousPage.value}
+                    nextPage={content.nextPage.value}
+                    pageIndicator={content.pageIndicator.value}
                 />
             )}
         </div>
