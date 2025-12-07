@@ -1,149 +1,146 @@
-Personal Portfolio
+# Personal Portfolio & Blog
 
-A modern, high-performance personal portfolio website built with Next.js 16, Drizzle ORM, Vercel Postgres, and Intlayer for internationalization.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-🚀 Tech Stack
+A modern, high-performance personal portfolio website built with the latest technologies, featuring a full-featured admin panel for content management, internationalization, and dynamic OG image generation.
 
-Framework: Next.js 16 (App Router)
+![Homepage Screenshot](public/assets/homepage.png)
 
-Language: TypeScript
+### ✨ Core Features
 
-Styling: Tailwind CSS v4 & shadcn/ui
+-   **Bilingual Content (i18n):** Fully localized for English and Turkish using `next-intlayer`, including translated URL slugs.
+-   **Dynamic Content Management:** A secure admin panel to create, update, and delete projects.
+-   **Markdown Support:** A rich markdown editor with live preview for project descriptions.
+-   **Secure Authentication:** Admin-only access using `next-auth` with credentials provider.
+-   **File Uploads:** Project thumbnail uploads handled by Vercel Blob storage.
+-   **Contact Form:** A server-side contact form that sends emails using Resend.
+-   **Dynamic OG Images:** On-the-fly Open Graph image generation for rich social sharing.
+-   **Theming:** Dark/Light mode support with `next-themes`.
+-   **Database & ORM:** Built with Vercel Postgres and Drizzle ORM for type-safe database access.
 
-Database: Vercel Postgres (Neon)
+---
 
-ORM: Drizzle ORM
+### 🚀 Tech Stack
 
-Authentication: Auth.js (NextAuth v5)
+| Category                 | Technology                                                                                                                  |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| **Framework**            | [Next.js](https://nextjs.org/) 16 (App Router)                                                                              |
+| **Language**             | [TypeScript](https://www.typescriptlang.org/)                                                                               |
+| **Styling**              | [Tailwind CSS](https://tailwindcss.com/) v4 & [shadcn/ui](https://ui.shadcn.com/)                                           |
+| **Database**             | [Vercel Postgres](https://vercel.com/storage/postgres) (Neon)                                                               |
+| **ORM**                  | [Drizzle ORM](https://orm.drizzle.team/)                                                                                    |
+| **Authentication**       | [Auth.js (NextAuth v5)](https://authjs.dev/)                                                                                |
+| **Internationalization** | [Intlayer](https://www.intlayer.dev/) (v7)                                                                                  |
+| **File Uploads**         | [Vercel Blob](https://vercel.com/storage/blob)                                                                              |
+| **Email**                | [Resend](https://resend.com/)                                                                                               |
+| **UI Components**        | [Radix UI](https://www.radix-ui.com/), [Framer Motion](https://www.framer.com/motion/), [Lucide React](https://lucide.dev/) |
+| **Form Management**      | [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)                                                   |
+| **Logging**              | [Winston](https://github.com/winstonjs/winston)                                                                             |
+| **Deployment**           | [Vercel](https://vercel.com/)                                                                                               |
 
-Internationalization: Intlayer (v7)
+---
 
-Logging: Winston
+### 🛠️ Prerequisites
 
-Deployment: Vercel
+-   Node.js: `v18.17` or higher
+-   Package Manager: `pnpm` (`npm install -g pnpm`)
+-   Vercel CLI: Optional, for local environment variable management (`npm i -g vercel`)
 
-🛠️ Prerequisites
+---
 
-Node.js: v18.17 or higher
+### ⚙️ Getting Started
 
-Package Manager: pnpm (npm install -g pnpm)
+1.  **Clone the repository:**
 
-Vercel CLI: Optional, but recommended for local env management (npm i -g vercel)
+    ```bash
+    git clone https://github.com/your-username/portfolio.git
+    cd portfolio
+    ```
 
-⚙️ Environment Setup
+2.  **Install dependencies:**
 
-Clone the repository:
+    ```bash
+    pnpm install
+    ```
 
-git clone [https://github.com/yourusername/portfolio.git](https://github.com/yourusername/portfolio.git)
-cd portfolio
+3.  **Set up environment variables:**
+    Copy the `.env.example` file to a new file named `.env.local`.
 
-Install dependencies:
+    ```bash
+    cp .env.example .env.local
+    ```
 
-pnpm install
+    Update the variables in `.env.local` with your own credentials.
+    _Tip: If your project is linked to Vercel, you can pull database credentials by running `vercel env pull .env.local`._
 
-Environment Variables:
-Create a .env.local (or pull from Vercel) with the following keys:
+4.  **Push the database schema:**
+    This command syncs your schema (`lib/schema.ts`) with your Vercel Postgres database.
 
-# Database (Vercel Postgres/Neon)
+    ```bash
+    pnpm drizzle-kit push
+    ```
 
-POSTGRES_URL="postgres://..."
-POSTGRES_PRISMA_URL="postgres://..."
-POSTGRES_URL_NO_SSL="postgres://..."
-POSTGRES_URL_NON_POOLING="postgres://..."
-POSTGRES_USER="default"
-POSTGRES_HOST="..."
-POSTGRES_PASSWORD="..."
-POSTGRES_DATABASE="verceldb"
+5.  **Seed the admin user:**
+    This portfolio uses a closed authentication system. To create your initial admin account, open `scripts/seed.ts`, set your desired email and password, and then run the script:
+    ```bash
+    npx tsx scripts/seed.ts
+    ```
 
-# Authentication (Auth.js)
+---
 
-AUTH_SECRET="your-generated-secret" # run `npx auth secret` to generate
+### 🏃 Available Scripts
 
-# Logging
+-   `pnpm dev`: Starts the development server.
+-   `pnpm build`: Creates a production build of the application.
+-   `pnpm start`: Starts the production server.
+-   `pnpm lint`: Lints the codebase using ESLint.
+-   `pnpm drizzle-kit push`: Pushes the Drizzle ORM schema to the database.
+-   `pnpm drizzle-kit studio`: Opens the Drizzle Studio to view and manage data.
 
-NODE_ENV="development" # or "production"
+---
 
-Tip: If linked to Vercel, run vercel env pull .env.development.local to auto-fill database credentials.
+### 📂 Project Structure
 
-🗄️ Database Management
-
-This project uses Drizzle ORM for schema management and migrations.
-
-Push Schema to DB: (Syncs lib/schema.ts with Neon)
-
-pnpm drizzle-kit push
-
-Studio: (View and edit data visually)
-
-pnpm drizzle-kit studio
-
-Seed Admin User:
-This portfolio uses a closed authentication system (Admin only). To create your initial account:
-
-Open scripts/seed.ts and set your email/password.
-
-Run the seed script:
-
-npx tsx scripts/seed.ts
-
-🌍 Internationalization (i18n)
-
-Handled by Intlayer and Next-Intlayer.
-
-Config: intlayer.config.ts
-
-Structure:
-
-Content pages live in app/[locale]/.
-
-Middleware (proxy.ts) handles locale detection and redirects (e.g., / -> /en or /tr).
-
-Components use LocalizedLink for navigation to ensure the locale persists.
-
-🏃‍♂️ Running Locally
-
-Start the development server:
-
-pnpm dev
-
-Open http://localhost:3000 with your browser.
-
-📂 Project Structure
-
+```
 .
 ├── app/
-│ ├── [locale]/ # Localized routes
-│ │ ├── (public)/ # Public pages (Home, Projects)
-│ │ └── (admin)/ # Protected admin dashboard (Future)
-│ └── globals.css # Tailwind v4 Global Styles
+│   ├── [locale]/             # Localized routes (e.g., /en, /tr)
+│   │   ├── (public)/         # Publicly accessible pages
+│   │   └── (admin)/          # Protected admin dashboard
+│   ├── actions/              # Server Actions for form submissions, etc.
+│   └── api/                  # API routes (auth, OG images)
 ├── components/
-│ ├── layouts/ # Header, Footer, Providers
-│ ├── ui/ # shadcn/ui primitives
-│ ├── LocalizedLink.tsx # i18n Navigation Wrapper
-│ └── ...
+│   ├── admin/                # Components for the admin dashboard
+│   ├── layouts/              # Global layout components (Header, Providers)
+│   ├── public/               # Components for public-facing pages
+│   └── ui/                   # Reusable UI primitives from shadcn/ui
 ├── lib/
-│ ├── auth.ts # Auth.js configuration
-│ ├── db.ts # Drizzle DB instance (Global singleton)
-│ ├── logger.ts # Winston logger setup
-│ └── schema.ts # Database Schema
+│   ├── auth.ts               # Auth.js configuration
+│   ├── db.ts                 # Drizzle DB instance
+│   ├── schema.ts             # Database schema for Drizzle ORM
+│   └── actions.ts            # Server Actions logic
 ├── scripts/
-│ └── seed.ts # Admin user seeder
-├── drizzle.config.ts # Drizzle Kit config
-├── intlayer.config.ts # i18n config
-└── proxy.ts # Next.js Middleware (Network Boundary)
+│   └── seed.ts               # Script to seed the initial admin user
+├── .env.example              # Example environment variables
+├── drizzle.config.ts         # Drizzle Kit configuration
+├── intlayer.config.ts        # Intlayer i18n configuration
+└── next.config.ts            # Next.js configuration
+```
 
-🚢 Deployment
+---
 
-Push your code to GitHub.
+### 🚢 Deployment
 
-Import the project into Vercel.
+Deployment is designed for [Vercel](https://vercel.com/).
 
-Connect the Vercel Postgres storage integration in the dashboard.
+1.  Push your code to a GitHub repository.
+2.  Import the project into Vercel.
+3.  Connect the Vercel Postgres and Vercel Blob storage integrations.
+4.  Add the required environment variables (`AUTH_SECRET`, `RESEND_API_KEY`, etc.) in the Vercel project settings.
+5.  Deploy!
 
-Add the AUTH_SECRET to the Vercel Environment Variables.
+---
 
-Deploy!
+### 📄 License
 
-📄 License
-
-This project is open source and available under the MIT License.
+This project is open source and available under the [MIT License](https://opensource.org/licenses/MIT).
