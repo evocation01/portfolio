@@ -1,5 +1,6 @@
 // app/[locale]/layout.tsx
 import { RootLayoutClient } from "@/components/layouts/RootLayoutClient";
+import { Analytics } from "@vercel/analytics/next"; // New import
 import type { Locale } from "intlayer";
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "next-auth/react";
@@ -52,6 +53,8 @@ export default async function LocaleLayout({
         >
             <head>
                 <meta name="application-name" content="Hakan İspir Portfolio" />
+                <link rel="icon" href="/favicon.ico" sizes="any" />
+                <link rel="icon" href="/coding-icon.svg" type="image/svg+xml" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link
                     rel="preconnect"
@@ -62,7 +65,10 @@ export default async function LocaleLayout({
             <body>
                 <SessionProvider>
                     <IntlayerClientProvider locale={locale}>
-                        <RootLayoutClient>{children}</RootLayoutClient>
+                        <RootLayoutClient>
+                            {children}
+                            <Analytics />
+                        </RootLayoutClient>
                     </IntlayerClientProvider>
                 </SessionProvider>
             </body>
