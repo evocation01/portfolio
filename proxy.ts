@@ -9,6 +9,17 @@ import { intlayerMiddleware } from "next-intlayer/middleware";
 export default intlayerMiddleware;
 
 export const config = {
-    // Matcher ignoring internal Next.js paths, API routes, and static assets
-    matcher: ["/((?!api|static|assets|favicon.ico|coding-icon.svg|_next|_vercel|robots.txt|sitemap.xml).*)"],
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - api (API routes)
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         *
+         * It also excludes any files that have a file extension (e.g., .svg, .js, .css)
+         * which will correctly ignore the Vercel Analytics script.
+         */
+        "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
+    ],
 };
