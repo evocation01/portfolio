@@ -10,5 +10,5 @@ export default intlayerMiddleware;
 
 export const config = {
     // Matcher ignoring internal Next.js paths, API routes, and static assets
-    matcher: ["/((?!api|static|assets|favicon.ico|coding-icon.svg|_next|robots.txt|sitemap.xml).*)"],
+    matcher: ["/((?!api|static|assets|favicon.ico|coding-icon.svg|_next|_vercel|robots.txt|sitemap.xml).*)"],
 };
