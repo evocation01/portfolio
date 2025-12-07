@@ -129,6 +129,20 @@ A modern, high-performance personal portfolio website built with the latest tech
 
 ---
 
+---
+
+### 🔮 What's Next?
+
+This project is continuously evolving. Here are some of the planned future enhancements:
+
+-   **Enhanced Testing:** Implement End-to-End (E2E) tests using Playwright to ensure robust application behavior.
+-   **Advanced Caching:** Explore and integrate further caching strategies, potentially utilizing libraries like Tanstack Query, for improved data fetching performance and user experience.
+-   **Newsletter Integration:** Add a newsletter subscription form, possibly integrating with services like ConvertKit or Mailchimp, to keep visitors updated.
+-   **Guestbook Feature:** Introduce a public guestbook where visitors can leave comments, leveraging Auth.js (e.g., with GitHub provider) for user authentication.
+-   **Dedicated Blog Section:** Develop a separate blog or "thoughts" section to share articles and insights, distinct from project showcases.
+
+---
+
 ### 🚢 Deployment
 
 Deployment is designed for [Vercel](https://vercel.com/).
