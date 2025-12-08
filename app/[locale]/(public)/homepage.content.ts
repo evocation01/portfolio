@@ -27,6 +27,10 @@ const homepageContent = {
             en: "Contact Me",
             tr: "İletişime Geç",
         }),
+        aboutMe: t({
+            en: "About Me",
+            tr: "Hakkımda",
+        }),
         welcome: t({
             en: "Welcome",
             tr: "Hoş Geldiniz",

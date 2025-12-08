@@ -95,6 +95,16 @@ export default async function HomePage(props: {
                         </Button>
                         <Button
                             asChild
+                            variant="secondary"
+                            size="default"
+                            className="sm:size-lg"
+                        >
+                            <LocalizedLink href="/about">
+                                {content.aboutMe}
+                            </LocalizedLink>
+                        </Button>
+                        <Button
+                            asChild
                             variant="outline"
                             size="default"
                             className="sm:size-lg"
