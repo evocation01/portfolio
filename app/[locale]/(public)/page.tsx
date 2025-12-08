@@ -10,14 +10,15 @@ import Image from "next/image";
 import { Suspense } from "react";
 import homepageContent from "./homepage.content";
 
-export async function generateMetadata(
-    { params }: { params: Promise<{ locale: string }> }
-): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
     const awaitedParams = await params;
 
     const content = getIntlayer(homepageContent.key, awaitedParams.locale);
-    const baseUrl =
-        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const getLocalizedUrl = (locale: string) => {
         if (locale === "en") {
@@ -58,7 +59,9 @@ function ProjectsGridSkeleton() {
     );
 }
 
-export default async function HomePage(props: { params: Promise<{ locale: string }> }) {
+export default async function HomePage(props: {
+    params: Promise<{ locale: string }>;
+}) {
     const params = await props.params;
     const awaitedParams = await params;
     const content = getIntlayer(homepageContent.key, awaitedParams.locale);
@@ -80,15 +83,22 @@ export default async function HomePage(props: { params: Promise<{ locale: string
                             />
                         </div>
                     </div>
-                    <h1 className="text-5xl font-bold">{content.welcome}</h1>
-                    <p className="max-w-2xl text-lg text-muted-foreground mx-auto">
+                    <h1 className="text-4xl md:text-5xl font-bold">
+                        {content.welcome}
+                    </h1>
+                    <p className="max-w-2xl text-base md:text-lg text-muted-foreground mx-auto">
                         {content.description}
                     </p>
-                    <div className="flex gap-4 justify-center pt-[2vw]">
-                        <Button asChild size="lg">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-[2vw]">
+                        <Button asChild size="default" className="sm:size-lg">
                             <a href="#projects">{content.viewWork}</a>
                         </Button>
-                        <Button asChild variant="outline" size="lg">
+                        <Button
+                            asChild
+                            variant="outline"
+                            size="default"
+                            className="sm:size-lg"
+                        >
                             <LocalizedLink href="/contact">
                                 {content.contactMe}
                             </LocalizedLink>
@@ -103,14 +113,14 @@ export default async function HomePage(props: { params: Promise<{ locale: string
                 className="py-16 bg-card text-card-foreground"
             >
                 <div className="mx-auto py-2 px-2">
-                    <div className="flex justify-center items-center mb-12 relative max-w-7xl mx-auto">
-                        <h2 className="text-3xl font-bold text-center">
+                    <div className="flex flex-col md:flex-row justify-center items-center mb-12 relative max-w-7xl mx-auto gap-4">
+                        <h2 className="text-2xl md:text-3xl font-bold text-center">
                             {content.featuredProjects}
                         </h2>
                         <Button
                             asChild
                             variant="link"
-                            className="absolute right-0"
+                            className="md:absolute md:right-0"
                         >
                             <LocalizedLink href="/projects">
                                 {content.moreProjects}

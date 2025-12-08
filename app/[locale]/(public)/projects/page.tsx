@@ -102,11 +102,11 @@ export default async function ProjectsPage(
     return (
         <div className="container mx-auto py-10 px-4">
             <div className="mb-8 text-center">
-                <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                    {content.pageTitle.value}
+                <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
+                    {content.pageTitle}
                 </h1>
-                <p className="mt-2 text-lg text-muted-foreground">
-                    {content.pageDescription.value}
+                <p className="mt-2 text-base sm:text-lg text-muted-foreground">
+                    {content.pageDescription}
                 </p>
             </div>
 

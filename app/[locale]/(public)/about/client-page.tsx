@@ -25,7 +25,7 @@ export default function AboutPageClient() {
     return (
         <div className="max-w-4xl mx-auto py-10 px-4">
             <header className="flex flex-col md:flex-row items-center gap-8 mb-12">
-                <Avatar className="h-16 w-16">
+                <Avatar className="h-20 w-20 md:h-24 md:w-24">
                     <AvatarImage
                         src="/assets/headshot.jpg"
                         alt={aboutContent.name}
@@ -33,26 +33,26 @@ export default function AboutPageClient() {
                     <AvatarFallback>HI</AvatarFallback>
                 </Avatar>
                 <div className="text-center md:text-left">
-                    <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight lg:text-5xl">
                         {aboutContent.name}
                     </h1>
-                    <p className="mt-2 text-xl text-muted-foreground">
+                    <p className="mt-2 text-lg sm:text-xl text-muted-foreground">
                         {aboutContent.jobTitle}
                     </p>
                 </div>
             </header>
 
             <section className="mb-12">
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.pageTitle}
                 </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                     {aboutContent.profile}
                 </p>
             </section>
 
             <section className="mb-12">
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.skillsTitle}
                 </h2>
                 <div className="flex flex-wrap gap-2">
@@ -60,7 +60,7 @@ export default function AboutPageClient() {
                         <Badge
                             key={index}
                             variant="secondary"
-                            className="text-md"
+                            className="text-sm sm:text-md"
                         >
                             {skill}
                         </Badge>
@@ -69,16 +69,16 @@ export default function AboutPageClient() {
             </section>
 
             <section className="mb-12">
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.experienceTitle}
                 </h2>
                 <div className="space-y-8">
                     {aboutContent.experience.map((job: any, index: number) => (
                         <div key={index}>
-                            <h3 className="text-2xl font-semibold">
+                            <h3 className="text-xl sm:text-2xl font-semibold">
                                 {job.role}
                             </h3>
-                            <div className="flex justify-between items-baseline">
+                            <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
                                 <p className="font-medium text-primary">
                                     {job.company}
                                 </p>
@@ -95,14 +95,14 @@ export default function AboutPageClient() {
             </section>
 
             <section className="mb-12">
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.educationTitle}
                 </h2>
                 <div>
-                    <h3 className="text-2xl font-semibold">
+                    <h3 className="text-xl sm:text-2xl font-semibold">
                         {aboutContent.education.degree}
                     </h3>
-                    <div className="flex justify-between items-baseline">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
                         <p className="font-medium text-primary">
                             {aboutContent.education.institution}
                         </p>
@@ -114,7 +114,7 @@ export default function AboutPageClient() {
             </section>
 
             <section className="mb-12">
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.licensesTitle}
                 </h2>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground">
@@ -127,7 +127,7 @@ export default function AboutPageClient() {
             </section>
 
             <section className="mb-12">
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.languagesTitle}
                 </h2>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground">
@@ -140,7 +140,7 @@ export default function AboutPageClient() {
             </section>
 
             <section className="mb-12">
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.volunteeringTitle}
                 </h2>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground">
@@ -153,7 +153,7 @@ export default function AboutPageClient() {
             </section>
 
             <section>
-                <h2 className="text-3xl font-bold mb-4 border-b pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.resumeTitle}
                 </h2>
                 <ResumeViewer />
