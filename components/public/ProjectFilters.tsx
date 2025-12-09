@@ -3,16 +3,25 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import { type tags } from "@/lib/schema";
+
+type Tag = typeof tags.$inferSelect;
+type MasterTag = Tag & { children: Tag[] };
 
 export function ProjectFilters({
-    allTags,
+    masterTags,
     searchPlaceholder,
     allTagsLabel,
 }: {
-    allTags: string[];
+    masterTags: MasterTag[];
     searchPlaceholder: string;
     allTagsLabel: string;
 }) {
@@ -21,9 +30,11 @@ export function ProjectFilters({
     const { replace } = useRouter();
     const [isPending, startTransition] = useTransition();
 
+    const activeTag = searchParams.get("tag") || "";
+
     const handleSearch = (term: string) => {
         const params = new URLSearchParams(searchParams);
-        params.set("page", "1"); // Reset page on new search
+        params.set("page", "1");
         if (term) {
             params.set("query", term);
         } else {
@@ -34,13 +45,13 @@ export function ProjectFilters({
         });
     };
 
-    const handleTagFilter = (tag: string) => {
+    const handleTagFilter = (tagName: string) => {
         const params = new URLSearchParams(searchParams);
-        params.set("page", "1"); // Reset page on new filter
-        if (params.get("tag") === tag || tag === "") {
+        params.set("page", "1");
+        if (activeTag === tagName || tagName === "") {
             params.delete("tag");
         } else {
-            params.set("tag", tag);
+            params.set("tag", tagName);
         }
         startTransition(() => {
             replace(`${pathname}?${params.toString()}`);
@@ -49,7 +60,7 @@ export function ProjectFilters({
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div className="relative w-full md:w-1/3">
+            <div className="relative w-full md:max-w-xs">
                 <Input
                     placeholder={searchPlaceholder}
                     defaultValue={searchParams.get("query")?.toString()}
@@ -58,28 +69,47 @@ export function ProjectFilters({
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             </div>
-            <ScrollArea className="w-full md:w-2/3 whitespace-nowrap">
+            <ScrollArea className="w-full md:w-auto">
                 <div className="flex w-max space-x-2">
                     <Button
-                        variant={
-                            !searchParams.get("tag") ? "default" : "outline"
-                        }
+                        variant={!activeTag ? "default" : "outline"}
                         onClick={() => handleTagFilter("")}
                     >
                         {allTagsLabel}
                     </Button>
-                    {allTags.map((tag) => (
-                        <Button
-                            key={tag}
-                            variant={
-                                searchParams.get("tag") === tag
-                                    ? "default"
-                                    : "outline"
-                            }
-                            onClick={() => handleTagFilter(tag)}
-                        >
-                            {tag}
-                        </Button>
+                    {masterTags.map((master) => (
+                        <HoverCard key={master.id} openDelay={200}>
+                            <HoverCardTrigger asChild>
+                                <Button
+                                    variant={
+                                        activeTag === master.name ? "default" : "outline"
+                                    }
+                                    onClick={() => handleTagFilter(master.name)}
+                                >
+                                    {master.name}
+                                </Button>
+                            </HoverCardTrigger>
+                            {master.children.length > 0 && (
+                                <HoverCardContent className="w-48">
+                                    <div className="flex flex-col gap-1">
+                                        {master.children.map((child) => (
+                                            <Button
+                                                key={child.id}
+                                                variant={
+                                                    activeTag === child.name
+                                                        ? "secondary"
+                                                        : "ghost"
+                                                }
+                                                className="w-full justify-start"
+                                                onClick={() => handleTagFilter(child.name)}
+                                            >
+                                                {child.name}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </HoverCardContent>
+                            )}
+                        </HoverCard>
                     ))}
                 </div>
                 <ScrollBar orientation="horizontal" />

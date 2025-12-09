@@ -28,10 +28,9 @@ export async function generateMetadata(
     { params }: { params: Promise<{ slug: string; locale: string }> }
 ): Promise<Metadata> {
     const awaitedParams = await params;
-    const [project] = await db
-        .select()
-        .from(projects)
-        .where(eq(projects.slug, awaitedParams.slug));
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.slug, awaitedParams.slug),
+    });
 
     if (!project) {
         return {
@@ -94,16 +93,19 @@ export function generateViewport(): Viewport {
     };
 }
 
-// This page needs to determine the locale to show the correct content.
-// It gets the locale from the `params` object provided by Next.js.
-
 export default async function ProjectDetailPage(props: { params: Promise<{ slug: string; locale: string }> }) {
     const params = await props.params;
     const awaitedParams = await params;
-    const [project] = await db
-        .select()
-        .from(projects)
-        .where(eq(projects.slug, awaitedParams.slug));
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.slug, awaitedParams.slug),
+        with: {
+            projectsToTags: {
+                with: {
+                    tag: true,
+                },
+            },
+        },
+    });
 
     if (!project) {
         notFound();
@@ -125,9 +127,9 @@ export default async function ProjectDetailPage(props: { params: Promise<{ slug:
                 <p className="text-xl text-muted-foreground">{description}</p>
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex flex-wrap gap-2">
-                        {project.tags?.map((tag) => (
-                            <Badge key={tag} variant="secondary">
-                                {tag}
+                        {project.projectsToTags.map((item) => (
+                            <Badge key={item.tag.id} variant="secondary">
+                                {item.tag.name}
                             </Badge>
                         ))}
                     </div>

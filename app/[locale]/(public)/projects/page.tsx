@@ -3,17 +3,19 @@ import { ProjectFilters } from "@/components/public/ProjectFilters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { db } from "@/lib/db";
-import { projects } from "@/lib/schema";
-import { and, count, desc, ilike, or, sql } from "drizzle-orm";
+import { projects, projectsToTags } from "@/lib/schema";
+import { and, count, desc, ilike, or, inArray } from "drizzle-orm";
 import type { Metadata, Viewport } from "next";
 import { getIntlayer } from "next-intlayer";
 import Image from "next/image";
 import Link from "next/link";
 import projectsContent from "./projects.content";
 
-export async function generateMetadata(
-    { params }: { params: Promise<{ locale: string }> }
-): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
     const awaitedParams = await params;
     const content = getIntlayer(projectsContent.key, awaitedParams.locale);
     const baseUrl =
@@ -27,8 +29,8 @@ export async function generateMetadata(
     };
 
     return {
-        title: content.metaTitle.value,
-        description: content.metaDescription.value,
+        title: content.metaTitle,
+        description: content.metaDescription,
         alternates: {
             canonical: getLocalizedUrl(awaitedParams.locale),
             languages: {
@@ -50,27 +52,51 @@ export function generateViewport(): Viewport {
 
 const PROJECTS_PER_PAGE = 6;
 
-export default async function ProjectsPage(
-    props: {
-        params: Promise<{ locale: string }>;
-        searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-    }
-) {
-    const searchParams = await props.searchParams;
+export default async function ProjectsPage(props: {
+    params: Promise<{ locale: string }>;
+    searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+    const searchParams = props.searchParams;
     const params = await props.params;
-    const awaitedParams = await params;
-    const locale = awaitedParams.locale as "en" | "tr";
+    const locale = params.locale as "en" | "tr";
     const content = getIntlayer(projectsContent.key, locale);
 
     const page = Number(searchParams?.page || 1);
-    const tag = (searchParams?.tag as string) || "";
+    const selectedTagName = (searchParams?.tag as string) || "";
     const query = (searchParams?.query as string) || "";
     const offset = (page - 1) * PROJECTS_PER_PAGE;
 
-    const whereClauses = [];
-    if (tag) {
-        whereClauses.push(sql`${tag} = ANY(projects.tags)`);
+    // --- New Data Fetching and Filtering Logic ---
+
+    // 1. Fetch all tags and build hierarchy in one go
+    const allTags = await db.query.tags.findMany();
+    const masterTags = allTags
+        .filter((t) => t.isMasterTag)
+        .map((master) => ({
+            ...master,
+            children: allTags.filter((child) => child.parentId === master.id),
+        }));
+
+    // 2. Determine tag IDs to filter by
+    let tagIdsToFilter: number[] = [];
+    if (selectedTagName) {
+        const selectedTag = allTags.find((t) => t.name === selectedTagName);
+        if (selectedTag) {
+            if (selectedTag.isMasterTag) {
+                tagIdsToFilter = [
+                    selectedTag.id,
+                    ...masterTags
+                        .find((mt) => mt.id === selectedTag.id)
+                        ?.children.map((c) => c.id) ?? [],
+                ];
+            } else {
+                tagIdsToFilter = [selectedTag.id];
+            }
+        }
     }
+
+    // 3. Construct WHERE clauses
+    const whereClauses = [];
     if (query) {
         const searchTerm = `%${query}%`;
         whereClauses.push(
@@ -83,9 +109,18 @@ export default async function ProjectsPage(
         );
     }
 
+    if (tagIdsToFilter.length > 0) {
+        const subquery = db
+            .select({ projectId: projectsToTags.projectId })
+            .from(projectsToTags)
+            .where(inArray(projectsToTags.tagId, tagIdsToFilter));
+        whereClauses.push(inArray(projects.id, subquery));
+    }
+
     const where = whereClauses.length > 0 ? and(...whereClauses) : undefined;
 
-    const [filteredProjects, total, allTagsResult] = await Promise.all([
+    // 4. Fetch filtered projects and total count
+    const [filteredProjects, total] = await Promise.all([
         db.query.projects.findMany({
             where,
             orderBy: [desc(projects.createdAt)],
@@ -93,10 +128,8 @@ export default async function ProjectsPage(
             offset,
         }),
         db.select({ count: count() }).from(projects).where(where),
-        db.select({ tags: projects.tags }).from(projects),
     ]);
 
-    const uniqueTags = [...new Set(allTagsResult.flatMap((p) => p.tags || []))];
     const totalPages = Math.ceil(total[0].count / PROJECTS_PER_PAGE);
 
     return (
@@ -111,19 +144,17 @@ export default async function ProjectsPage(
             </div>
 
             <ProjectFilters
-                allTags={uniqueTags}
-                searchPlaceholder={content.searchPlaceholder.value}
-                allTagsLabel={content.allTags.value}
+                masterTags={masterTags}
+                searchPlaceholder={content.searchPlaceholder}
+                allTagsLabel={content.allTags}
             />
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[1vw] gap-y-[3vh]">
                 {filteredProjects.map((project) => {
                     const title =
-                        params.locale === "tr"
-                            ? project.title_tr
-                            : project.title_en;
+                        locale === "tr" ? project.title_tr : project.title_en;
                     const description =
-                        params.locale === "tr"
+                        locale === "tr"
                             ? project.description_tr
                             : project.description_en;
 
@@ -160,7 +191,7 @@ export default async function ProjectsPage(
                 })}
                 {filteredProjects.length === 0 && (
                     <div className="md:col-span-3 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg bg-muted/50">
-                        {content.noProjects.value}
+                        {content.noProjects}
                     </div>
                 )}
             </div>
@@ -169,9 +200,9 @@ export default async function ProjectsPage(
                 <Pagination
                     currentPage={page}
                     totalPages={totalPages}
-                    previousPage={content.previousPage.value}
-                    nextPage={content.nextPage.value}
-                    pageIndicator={content.pageIndicator.value}
+                    previousPage={content.previousPage}
+                    nextPage={content.nextPage}
+                    pageIndicator={content.pageIndicator}
                 />
             )}
         </div>
