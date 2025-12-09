@@ -52,9 +52,9 @@ export async function createTag(prevState: any, formData: FormData) {
     try {
         await db.insert(tags).values(newTags);
         revalidatePath("/admin/tags");
-        return { message: `Successfully created ${newTags.length} tag(s).` };
+        return { message: `Successfully created ${newTags.length} tag(s).`, success: true };
     } catch (e) {
-        return { message: "Failed to create tags. Some may already exist." };
+        return { message: "Failed to create tags. Some may already exist.", success: false };
     }
 }
 
@@ -90,7 +90,7 @@ export async function updateTag(prevState: any, formData: FormData) {
             .set({ name, isMasterTag, parentId })
             .where(eq(tags.id, id));
         revalidatePath("/admin/tags");
-        return { message: `Tag "${name}" updated successfully.` };
+        return { message: `Tag "${name}" updated successfully.`, success: true };
     } catch (e) {
         console.error("Database update failed:", e);
         return { message: "Failed to update tag." };
@@ -137,42 +137,60 @@ export async function deleteTag(prevState: any, formData: FormData) {
     }
 }
 
-const BulkUpdateParentSchema = z.object({
+const BulkUpdateSchema = z.object({
     tagIds: z.string().transform((str) => str.split(",").map(Number)),
     newParentId: z
         .string()
         .transform((val) => (val === "null" ? null : Number(val))),
+    isMasterTag: z.string().optional(),
 });
 
-export async function bulkUpdateTagsParent(prevState: any, formData: FormData) {
+export async function bulkUpdateTags(prevState: any, formData: FormData) {
     const session = await auth();
-    if (!session?.user) return { message: "Unauthorized" };
+    if (!session?.user) return { message: "Unauthorized", success: false };
 
-    const validatedFields = BulkUpdateParentSchema.safeParse(
+    const validatedFields = BulkUpdateSchema.safeParse(
         Object.fromEntries(formData.entries())
     );
 
     if (!validatedFields.success) {
-        return { message: "Invalid data provided for bulk update." };
+        return { message: "Invalid data provided for bulk update.", success: false };
     }
 
-    const { tagIds, newParentId } = validatedFields.data;
+    const { tagIds, newParentId, isMasterTag } = validatedFields.data;
 
     if (newParentId !== null && tagIds.includes(newParentId)) {
-        return { message: "Cannot set a tag as its own child." };
+        return { message: "Cannot set a tag as its own child.", success: false };
+    }
+
+    const valuesToSet: { parentId?: number | null; isMasterTag?: boolean } = {};
+
+    if (formData.has("newParentId")) {
+        valuesToSet.parentId = newParentId;
+    }
+
+    if (isMasterTag === "true") {
+        valuesToSet.isMasterTag = true;
+    } else if (isMasterTag === "false") {
+        valuesToSet.isMasterTag = false;
+    }
+
+    if (Object.keys(valuesToSet).length === 0) {
+        return { message: "No changes were specified.", success: false };
     }
 
     try {
         await db
             .update(tags)
-            .set({ parentId: newParentId })
+            .set(valuesToSet)
             .where(inArray(tags.id, tagIds));
 
         revalidatePath("/admin/tags");
         return {
-            message: `Successfully updated parent for ${tagIds.length} tag(s).`,
+            message: `Successfully updated ${tagIds.length} tag(s).`,
+            success: true,
         };
     } catch (e) {
-        return { message: "Failed to bulk update tags." };
+        return { message: "Failed to bulk update tags.", success: false };
     }
 }

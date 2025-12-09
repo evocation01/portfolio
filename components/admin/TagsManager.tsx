@@ -151,9 +151,14 @@ function DeleteTagButton({ tagId }: { tagId: number }) {
     );
 }
 
-function BulkActions({ selectedTagIds, allTags, onClear }: { selectedTagIds: number[]; allTags: Tag[]; onClear: () => void; }) {
-    const [state, formAction, isPending] = useActionState(bulkUpdateTagsParent, undefined);
-    useActionToast(state, onClear);
+function BulkEditDialog({ selectedTagIds, allTags, onClear }: { selectedTagIds: number[]; allTags: Tag[]; onClear: () => void; }) {
+    const [state, formAction, isPending] = useActionState(bulkUpdateTags, undefined);
+    useActionToast(state, () => {
+        if (state?.success) {
+            onClear();
+            setOpen(false);
+        }
+    });
     const [open, setOpen] = useState(false);
 
     if (selectedTagIds.length === 0) return null;
@@ -163,20 +168,22 @@ function BulkActions({ selectedTagIds, allTags, onClear }: { selectedTagIds: num
             <DialogTrigger asChild>
                 <Button variant="outline">
                     <GitMerge className="mr-2" />
-                    Bulk Actions for {selectedTagIds.length} tag(s)
+                    Bulk Edit ({selectedTagIds.length})
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Set New Parent</DialogTitle>
+                    <DialogTitle>Bulk Edit Tags</DialogTitle>
+                    <CardDescription>Apply changes to all selected tags.</CardDescription>
                 </DialogHeader>
                 <form action={formAction} className="space-y-4">
                     <input type="hidden" name="tagIds" value={selectedTagIds.join(",")} />
                     <div className="space-y-2">
-                        <Label htmlFor="newParentId">New Parent Tag</Label>
-                        <Select name="newParentId">
-                            <SelectTrigger><SelectValue placeholder="Select a parent" /></SelectTrigger>
+                        <Label htmlFor="newParentId">Set New Parent</Label>
+                        <Select name="newParentId" defaultValue="">
+                            <SelectTrigger><SelectValue placeholder="Keep Unchanged" /></SelectTrigger>
                             <SelectContent className="max-h-60">
+                                <SelectItem value="">Keep Unchanged</SelectItem>
                                 <SelectItem value="null">None (make top-level)</SelectItem>
                                 {allTags.filter(t => !selectedTagIds.includes(t.id)).map((t) => (
                                     <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
@@ -184,9 +191,20 @@ function BulkActions({ selectedTagIds, allTags, onClear }: { selectedTagIds: num
                             </SelectContent>
                         </Select>
                     </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="isMasterTag">Master Tag Status</Label>
+                        <Select name="isMasterTag" defaultValue="">
+                            <SelectTrigger><SelectValue placeholder="Keep Unchanged" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="">Keep Unchanged</SelectItem>
+                                <SelectItem value="true">Set as Master</SelectItem>
+                                <SelectItem value="false">Remove as Master</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <Button type="submit" disabled={isPending} className="w-full">
                         {isPending && <Loader2 className="mr-2 animate-spin" />}
-                        Apply New Parent
+                        Apply Changes
                     </Button>
                 </form>
             </DialogContent>
@@ -272,7 +290,7 @@ export function TagsManager({ allTags }: { allTags: Tag[] }) {
                     <CardTitle>Existing Tags</CardTitle>
                     <div className="flex items-center justify-between">
                          <p className="text-muted-foreground">Organize your tags into a hierarchy.</p>
-                         <BulkActions selectedTagIds={selectedTagIds} allTags={allTags} onClear={() => setSelectedTagIds([])} />
+                         <BulkEditDialog selectedTagIds={selectedTagIds} allTags={allTags} onClear={() => setSelectedTagIds([])} />
                     </div>
                 </CardHeader>
                 <CardContent>
