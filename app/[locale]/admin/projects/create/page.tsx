@@ -2,18 +2,19 @@
 import { ProjectForm } from "@/components/admin/ProjectForm";
 import { Button } from "@/components/ui/button";
 import { createProject } from "@/lib/actions";
+import { db } from "@/lib/db";
 import { getIntlayer } from "next-intlayer";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import adminContent from "../../admin.content";
 
-export default async function CreateProjectPage(
-    props: {
-        params: Promise<{ locale: string }>;
-    }
-) {
+export default async function CreateProjectPage(props: {
+    params: Promise<{ locale: string }>;
+}) {
     const params = await props.params;
     const content = getIntlayer(adminContent.key, params.locale);
+    const allTags = await db.query.tags.findMany();
+
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -27,7 +28,11 @@ export default async function CreateProjectPage(
                 </h1>
             </div>
 
-            <ProjectForm serverAction={createProject} content={content} />
+            <ProjectForm
+                serverAction={createProject}
+                content={content}
+                allTags={allTags}
+            />
         </div>
     );
 }

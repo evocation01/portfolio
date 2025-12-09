@@ -14,33 +14,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { deleteImage, uploadImage } from "@/lib/upload-actions";
-import { type projects } from "@/lib/schema";
+import { type projects, type tags } from "@/lib/schema";
 import { Loader2, Save, Trash2, UploadCloud } from "lucide-react";
 import Image from "next/image";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useState, useTransition, useEffect } from "react";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { MultiSelect, OptionType } from "../ui/multi-select";
+import { toast } from "sonner";
 
 type Project = typeof projects.$inferSelect;
+type Tag = typeof tags.$inferSelect;
+type ProjectWithTags = Project & {
+    projectsToTags: { tagId: number }[];
+};
 
-// Define the shape of the server action function
 type ProjectServerAction = (
     prevState: { message?: string; errors?: Record<string, string[]> },
     formData: FormData
 ) => Promise<{ message?: string; errors?: Record<string, string[]> }>;
 
 interface ProjectFormProps {
-    project?: Project;
+    project?: ProjectWithTags;
+    allTags: Tag[];
     serverAction: ProjectServerAction;
     content: any;
 }
 
-export function ProjectForm({ project, serverAction, content }: ProjectFormProps) {
+export function ProjectForm({
+    project,
+    allTags,
+    serverAction,
+    content,
+}: ProjectFormProps) {
     const [isPending, startTransition] = useTransition();
     const [uploading, setUploading] = useState(false);
-
     const isEditMode = !!project;
+
+    const initialTagIds =
+        project?.projectsToTags.map((t) => String(t.tagId)) ?? [];
+    const [selectedTags, setSelectedTags] = useState<string[]>(initialTagIds);
+
+    const tagOptions: OptionType[] = allTags.map((tag) => ({
+        label: tag.name,
+        value: String(tag.id),
+    }));
 
     const [formData, setFormData] = useState({
         slug: project?.slug ?? "",
@@ -50,7 +69,6 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
         title_tr: project?.title_tr ?? "",
         description_tr: project?.description_tr ?? "",
         body_tr: project?.body_tr ?? "",
-        tags: project?.tags?.join(", ") ?? "",
         github_url: project?.github_url ?? "",
         live_url: project?.live_url ?? "",
         thumbnail_url: project?.thumbnail_url ?? "",
@@ -62,6 +80,15 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
         errors: {},
     });
 
+    useEffect(() => {
+        if (state.message) {
+            toast(state.message);
+        }
+        if (state.errors && Object.keys(state.errors).length > 0) {
+            toast.error("Please check the form for errors.");
+        }
+    }, [state]);
+
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
@@ -72,17 +99,12 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
         setUploading(true);
         const formData = new FormData();
         formData.append("file", file);
-
         const result = await uploadImage(formData);
-
         if (result.error) {
-            // Handle error, e.g., show a toast notification
-            console.error(result.error);
-            alert(`Upload failed: ${result.error}`);
+            toast.error(`Upload failed: ${result.error}`);
         } else if (result.url) {
             setFormData((prev) => ({ ...prev, thumbnail_url: result.url }));
         }
@@ -91,11 +113,9 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
 
     const handleRemoveImage = async () => {
         if (!formData.thumbnail_url) return;
-
         const result = await deleteImage(formData.thumbnail_url);
         if (result.error) {
-            console.error(result.error);
-            alert(`Failed to delete image: ${result.error}`);
+            toast.error(`Failed to delete image: ${result.error}`);
         } else {
             setFormData((prev) => ({ ...prev, thumbnail_url: "" }));
         }
@@ -109,13 +129,13 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
         e.preventDefault();
         const formDataObj = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
-            // Append boolean as string, will be coerced by Zod
             if (typeof value === "boolean") {
                 formDataObj.append(key, String(value));
             } else {
                 formDataObj.append(key, value || "");
             }
         });
+        formDataObj.append("tags", selectedTags.join(","));
         if (isEditMode) {
             formDataObj.append("id", String(project.id));
         }
@@ -129,7 +149,9 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
             <Card className="w-full max-w-4xl mx-auto">
                 <CardHeader>
                     <CardTitle>
-                        {isEditMode ? content.editProjectTitle : content.createProjectTitle}
+                        {isEditMode
+                            ? content.editProjectTitle
+                            : content.createProjectTitle}
                     </CardTitle>
                     <CardDescription>
                         {isEditMode
@@ -139,11 +161,10 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
                 </CardHeader>
 
                 <CardContent className="space-y-6">
-                    {/* Thumbnail Uploader */}
                     <div className="space-y-2">
                         <Label>{content.thumbnailLabel}</Label>
                         <div className="flex items-center gap-4">
-                            {formData.thumbnail_url ? (
+                            {formData.thumbnail_url && (
                                 <div className="relative group">
                                     <Image
                                         src={formData.thumbnail_url}
@@ -161,12 +182,6 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
-                                </div>
-                            ) : (
-                                <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
-                                    <p className="text-xs text-muted-foreground">
-                                        {content.noImage}
-                                    </p>
                                 </div>
                             )}
                             <div className="relative">
@@ -188,7 +203,6 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
                         </div>
                     </div>
 
-                    {/* Show on Homepage Toggle */}
                     <div className="flex items-center space-x-2 pt-4">
                         <Switch
                             id="showOnHomepage"
@@ -201,7 +215,6 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
                         </Label>
                     </div>
 
-                    {/* Global Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="slug">{content.slugLabel}</Label>
@@ -216,12 +229,11 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tags">{content.tagsLabel}</Label>
-                            <Input
-                                id="tags"
-                                name="tags"
-                                placeholder={content.tagsPlaceholder.value}
-                                value={formData.tags}
-                                onChange={handleInputChange}
+                            <MultiSelect
+                                options={tagOptions}
+                                selected={selectedTags}
+                                onChange={setSelectedTags}
+                                placeholder="Select tags..."
                             />
                         </div>
                     </div>
@@ -248,7 +260,6 @@ export function ProjectForm({ project, serverAction, content }: ProjectFormProps
                         </div>
                     </div>
 
-                    {/* Bilingual Content Tabs */}
                     <Tabs defaultValue="en" className="w-full mt-6">
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="en">{content.englishTab}</TabsTrigger>
