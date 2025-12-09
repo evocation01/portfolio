@@ -5,7 +5,7 @@ import {
     createTag,
     updateTag,
     deleteTag,
-    bulkUpdateTagsParent,
+    bulkUpdateTags,
 } from "@/lib/tags-actions";
 import { type tags } from "@/lib/schema";
 import { Button } from "@/components/ui/button";
