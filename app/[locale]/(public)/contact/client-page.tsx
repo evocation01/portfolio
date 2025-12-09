@@ -192,7 +192,7 @@ export default function ContactPageClient() {
                             " "
                         )}
                         <a
-                            href="mailto:contact@hakanispir.dev"
+                            href="mailto:contact@send.hakanispir.dev"
                             className="underline"
                         >
                             contact@hakanispir.dev

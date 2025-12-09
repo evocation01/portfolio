@@ -189,8 +189,8 @@ export async function sendContactEmail(
 
     try {
         await resend.emails.send({
-            from: "Contact Form <contact@hakanispir.dev>",
-            to: "contact@hakanispir.dev",
+            from: "Contact Form <contact@send.hakanispir.dev>",
+            to: "contact@send.hakanispir.dev",
             subject: `Portfolio Contact: ${subject}`,
             replyTo: email,
             html: `
