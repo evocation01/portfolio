@@ -180,10 +180,10 @@ function BulkEditDialog({ selectedTagIds, allTags, onClear }: { selectedTagIds: 
                     <input type="hidden" name="tagIds" value={selectedTagIds.join(",")} />
                     <div className="space-y-2">
                         <Label htmlFor="newParentId">Set New Parent</Label>
-                        <Select name="newParentId" defaultValue="">
-                            <SelectTrigger><SelectValue placeholder="Keep Unchanged" /></SelectTrigger>
+                        <Select name="newParentId" defaultValue="unchanged">
+                            <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent className="max-h-60">
-                                <SelectItem value="">Keep Unchanged</SelectItem>
+                                <SelectItem value="unchanged">Keep Unchanged</SelectItem>
                                 <SelectItem value="null">None (make top-level)</SelectItem>
                                 {allTags.filter(t => !selectedTagIds.includes(t.id)).map((t) => (
                                     <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
@@ -193,10 +193,10 @@ function BulkEditDialog({ selectedTagIds, allTags, onClear }: { selectedTagIds: 
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="isMasterTag">Master Tag Status</Label>
-                        <Select name="isMasterTag" defaultValue="">
-                            <SelectTrigger><SelectValue placeholder="Keep Unchanged" /></SelectTrigger>
+                        <Select name="isMasterTag" defaultValue="unchanged">
+                            <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">Keep Unchanged</SelectItem>
+                                <SelectItem value="unchanged">Keep Unchanged</SelectItem>
                                 <SelectItem value="true">Set as Master</SelectItem>
                                 <SelectItem value="false">Remove as Master</SelectItem>
                             </SelectContent>

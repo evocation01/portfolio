@@ -139,9 +139,7 @@ export async function deleteTag(prevState: any, formData: FormData) {
 
 const BulkUpdateSchema = z.object({
     tagIds: z.string().transform((str) => str.split(",").map(Number)),
-    newParentId: z
-        .string()
-        .transform((val) => (val === "null" ? null : Number(val))),
+    newParentId: z.string().optional(),
     isMasterTag: z.string().optional(),
 });
 
@@ -154,25 +152,29 @@ export async function bulkUpdateTags(prevState: any, formData: FormData) {
     );
 
     if (!validatedFields.success) {
-        return { message: "Invalid data provided for bulk update.", success: false };
+        return {
+            message: "Invalid data provided for bulk update.",
+            success: false,
+        };
     }
 
     const { tagIds, newParentId, isMasterTag } = validatedFields.data;
 
-    if (newParentId !== null && tagIds.includes(newParentId)) {
-        return { message: "Cannot set a tag as its own child.", success: false };
-    }
-
     const valuesToSet: { parentId?: number | null; isMasterTag?: boolean } = {};
 
-    if (formData.has("newParentId")) {
-        valuesToSet.parentId = newParentId;
+    if (newParentId && newParentId !== "unchanged") {
+        const parentId = newParentId === "null" ? null : Number(newParentId);
+        if (parentId !== null && tagIds.includes(parentId)) {
+            return {
+                message: "Cannot set a tag as its own child.",
+                success: false,
+            };
+        }
+        valuesToSet.parentId = parentId;
     }
 
-    if (isMasterTag === "true") {
-        valuesToSet.isMasterTag = true;
-    } else if (isMasterTag === "false") {
-        valuesToSet.isMasterTag = false;
+    if (isMasterTag && isMasterTag !== "unchanged") {
+        valuesToSet.isMasterTag = isMasterTag === "true";
     }
 
     if (Object.keys(valuesToSet).length === 0) {

@@ -8,15 +8,15 @@ DevOps: CI/CD, Automation, Vercel, Netlify
 
 Testing: Vitest, React Testing Library, Unittest
 
-Data Science & Analysis: Data Science, Pandas, NumPy, SciPy, Matplotlib, Seaborn, Plotly
+Data Science & Analysis: Pandas, NumPy, SciPy, Matplotlib, Seaborn, Plotly
 
-Machine Learning & Deep Learning: Machine Learning, Deep Learning, PyTorch, Scikit-learn, ONNX
+Machine Learning: Deep Learning, PyTorch, Scikit-learn, ONNX
 
-Computer Vision: Computer Vision, OCR, Tesseract, Pillow
+Computer Vision: OCR, Tesseract, Pillow
 
-Natural Language Processing (NLP): Natural Language Processing (NLP), Hugging Face, Transformers, MarianMT, LLM, Generative AI, Gemini
+Natural Language Processing (NLP): Hugging Face, Transformers, MarianMT, LLM, Generative AI, Gemini
 
-Robotics: Robotics, LiDAR, Autonomous Driving
+Robotics: LiDAR, Autonomous Driving
 
 Evolutionary Computation: Evolutionary Computation, Genetic Algorithms (GA)
 
