@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import logger from "@/lib/logger";
-import { projects } from "@/lib/schema";
+import { projects, projectsToTags } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -26,13 +26,10 @@ const ProjectSchema = z.object({
     live_url: z.string().url().optional().or(z.literal("")),
     thumbnail_url: z.string().url().optional().or(z.literal("")),
     showOnHomepage: z.coerce.boolean(),
-    // Transform "tag1, tag2" string into array ["tag1", "tag2"]
-    tags: z.string().transform((str) =>
-        str
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-    ),
+    // Transform "1,2,3" string into array [1, 2, 3] of numbers
+    tags: z
+        .string()
+        .transform((str) => (str ? str.split(",").map(Number) : [])),
 });
 
 export async function createProject(prevState: any, formData: FormData) {
@@ -41,10 +38,7 @@ export async function createProject(prevState: any, formData: FormData) {
         return { message: "Unauthorized" };
     }
 
-    // Parse raw FormData into an object
     const rawData = Object.fromEntries(formData.entries());
-
-    // Validate
     const validatedFields = ProjectSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
@@ -55,44 +49,43 @@ export async function createProject(prevState: any, formData: FormData) {
     }
 
     const { data } = validatedFields;
+    const { tags, ...projectData } = data;
 
     try {
-        await db.insert(projects).values({
-            slug: data.slug,
-            title_en: data.title_en,
-            description_en: data.description_en,
-            body_en: data.body_en,
-            title_tr: data.title_tr,
-            description_tr: data.description_tr,
-            body_tr: data.body_tr,
-            github_url: data.github_url || null,
-            live_url: data.live_url || null,
-            thumbnail_url: data.thumbnail_url || null,
-            showOnHomepage: data.showOnHomepage,
-            tags: data.tags,
-        });
+        await db.transaction(async (tx) => {
+            const newProject = await tx
+                .insert(projects)
+                .values(projectData)
+                .returning({ id: projects.id });
 
-        logger.info("Project created", {
-            slug: data.slug,
-            user: session.user.email,
+            const projectId = newProject[0].id;
+
+            if (tags && tags.length > 0) {
+                await tx.insert(projectsToTags).values(
+                    tags.map((tagId: number) => ({
+                        projectId,
+                        tagId,
+                    }))
+                );
+            }
+
+            logger.info("Project created", {
+                slug: data.slug,
+                user: session.user?.email,
+            });
         });
     } catch (error) {
         logger.error("Database Error: Failed to Create Project", { error });
         return { message: "Database Error: Failed to Create Project." };
     }
 
-    // We need to know the current locale to redirect correctly
-    // In a server action, this is tricky, so we default to English or pass it in formData
-    // For simplicity, we hardcode redirection to the dashboard
-
     revalidatePath("/en/projects");
     revalidatePath("/tr/projects");
     redirect("/en/admin");
 }
 
-// Schema for updating includes the ID
 const UpdateProjectSchema = ProjectSchema.extend({
-    id: z.coerce.number(), // Coerce string from FormData to number
+    id: z.coerce.number(),
 });
 
 export async function updateProject(prevState: any, formData: FormData) {
@@ -112,29 +105,32 @@ export async function updateProject(prevState: any, formData: FormData) {
     }
 
     const { data } = validatedFields;
+    const { tags, id: projectId, ...projectData } = data;
 
     try {
-        await db
-            .update(projects)
-            .set({
-                slug: data.slug,
-                title_en: data.title_en,
-                description_en: data.description_en,
-                body_en: data.body_en,
-                title_tr: data.title_tr,
-                description_tr: data.description_tr,
-                body_tr: data.body_tr,
-                github_url: data.github_url || null,
-                live_url: data.live_url || null,
-                thumbnail_url: data.thumbnail_url || null,
-                showOnHomepage: data.showOnHomepage,
-                tags: data.tags,
-            })
-            .where(eq(projects.id, data.id));
+        await db.transaction(async (tx) => {
+            await tx
+                .update(projects)
+                .set(projectData)
+                .where(eq(projects.id, projectId));
 
-        logger.info("Project updated", {
-            slug: data.slug,
-            user: session.user.email,
+            await tx
+                .delete(projectsToTags)
+                .where(eq(projectsToTags.projectId, projectId));
+
+            if (tags && tags.length > 0) {
+                await tx.insert(projectsToTags).values(
+                    tags.map((tagId: number) => ({
+                        projectId,
+                        tagId,
+                    }))
+                );
+            }
+
+            logger.info("Project updated", {
+                slug: data.slug,
+                user: session.user?.email,
+            });
         });
     } catch (error) {
         logger.error("Database Error: Failed to Update Project.", {
@@ -148,7 +144,6 @@ export async function updateProject(prevState: any, formData: FormData) {
         };
     }
 
-    // Revalidate all paths where this project might be shown
     revalidatePath("/en/projects");
     revalidatePath("/tr/projects");
     revalidatePath(`/en/projects/${data.slug}`);
