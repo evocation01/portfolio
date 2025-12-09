@@ -4,6 +4,7 @@ import { getIntlayer } from "next-intlayer";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import adminContent from "./admin.content";
+import { AdminNav } from "@/components/admin/AdminNav";
 
 export default async function AdminLayout(
     props: {
@@ -42,6 +43,7 @@ export default async function AdminLayout(
                         {content.dashboardDescription}
                     </p>
                 </div>
+                <AdminNav />
                 <main>{children}</main>
             </div>
         </div>
