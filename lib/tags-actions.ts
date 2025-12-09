@@ -10,7 +10,7 @@ import { and, eq, isNull, inArray } from "drizzle-orm";
 
 const TagSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    isMasterTag: z.coerce.boolean(),
+    isMasterTag: z.coerce.boolean().default(false),
     parentId: z
         .string()
         .optional()
