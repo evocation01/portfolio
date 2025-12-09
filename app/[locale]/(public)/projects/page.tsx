@@ -145,8 +145,8 @@ export default async function ProjectsPage(props: {
 
             <ProjectFilters
                 masterTags={masterTags}
-                searchPlaceholder={content.searchPlaceholder}
-                allTagsLabel={content.allTags}
+                searchPlaceholder={content.searchPlaceholder.value}
+                allTagsLabel={content.allTags.value}
             />
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[1vw] gap-y-[3vh]">
@@ -200,9 +200,9 @@ export default async function ProjectsPage(props: {
                 <Pagination
                     currentPage={page}
                     totalPages={totalPages}
-                    previousPage={content.previousPage}
-                    nextPage={content.nextPage}
-                    pageIndicator={content.pageIndicator}
+                    previousPage={content.previousPage.value}
+                    nextPage={content.nextPage.value}
+                    pageIndicator={content.pageIndicator.value}
                 />
             )}
         </div>

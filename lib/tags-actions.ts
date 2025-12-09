@@ -6,7 +6,7 @@ import { db } from "./db";
 import { projectsToTags, tags } from "./schema";
 import { auth } from "./auth";
 import { revalidatePath } from "next/cache";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, inArray } from "drizzle-orm";
 
 const TagSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -28,18 +28,30 @@ export async function createTag(prevState: any, formData: FormData) {
     if (!validatedFields.success) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
-            message: "Failed to create tag.",
+            message: "Failed to create tag(s).",
         };
     }
 
     const { name, isMasterTag, parentId } = validatedFields.data;
 
+    const tagNames = name.split(',').map(n => n.trim()).filter(Boolean);
+
+    if (tagNames.length === 0) {
+        return { message: "No tag names provided." };
+    }
+
+    const newTags = tagNames.map(n => ({
+        name: n,
+        isMasterTag,
+        parentId,
+    }));
+
     try {
-        await db.insert(tags).values({ name, isMasterTag, parentId });
+        await db.insert(tags).values(newTags);
         revalidatePath("/admin/tags");
-        return { message: `Tag "${name}" created successfully.` };
+        return { message: `Successfully created ${newTags.length} tag(s).` };
     } catch (e) {
-        return { message: "Failed to create tag. It may already exist." };
+        return { message: "Failed to create tags. Some may already exist." };
     }
 }
 
@@ -120,5 +132,41 @@ export async function deleteTag(prevState: any, formData: FormData) {
         return { message: "Tag deleted successfully." };
     } catch (e) {
         return { message: "Failed to delete tag." };
+    }
+}
+
+const BulkUpdateParentSchema = z.object({
+    tagIds: z.string().transform((str) => str.split(',').map(Number)),
+    newParentId: z.string().transform((val) => (val === "null" ? null : Number(val))),
+});
+
+export async function bulkUpdateTagsParent(prevState: any, formData: FormData) {
+    const session = await auth();
+    if (!session?.user) return { message: "Unauthorized" };
+
+    const validatedFields = BulkUpdateParentSchema.safeParse(
+        Object.fromEntries(formData.entries())
+    );
+
+    if (!validatedFields.success) {
+        return { message: "Invalid data provided for bulk update." };
+    }
+
+    const { tagIds, newParentId } = validatedFields.data;
+
+    if (newParentId !== null && tagIds.includes(newParentId)) {
+        return { message: "Cannot set a tag as its own child." };
+    }
+
+    try {
+        await db
+            .update(tags)
+            .set({ parentId: newParentId })
+            .where(inArray(tags.id, tagIds));
+
+        revalidatePath("/admin/tags");
+        return { message: `Successfully updated parent for ${tagIds.length} tag(s).` };
+    } catch (e) {
+        return { message: "Failed to bulk update tags." };
     }
 }
