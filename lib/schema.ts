@@ -9,6 +9,7 @@ import {
     timestamp,
     varchar,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import type { AdapterAccount } from "next-auth/adapters";
 
 export const projects = pgTable("projects", {
@@ -20,13 +21,53 @@ export const projects = pgTable("projects", {
     title_tr: varchar("title_tr", { length: 255 }).notNull(),
     description_tr: text("description_tr").notNull(),
     body_tr: text("body_tr").notNull(),
-    tags: text("tags").array(),
     github_url: varchar("github_url", { length: 255 }),
     live_url: varchar("live_url", { length: 255 }),
     thumbnail_url: varchar("thumbnail_url", { length: 255 }),
     createdAt: timestamp("created_at").defaultNow(),
     showOnHomepage: boolean("show_on_homepage").default(false).notNull(),
 });
+
+export const tags = pgTable("tags", {
+    id: serial("id").primaryKey(),
+    name: varchar("name", { length: 50 }).unique().notNull(),
+    parentId: integer("parent_id").references((): any => tags.id),
+    isMasterTag: boolean("is_master_tag").default(false).notNull(),
+});
+
+export const projectsToTags = pgTable(
+    "projects_to_tags",
+    {
+        projectId: integer("project_id")
+            .notNull()
+            .references(() => projects.id, { onDelete: "cascade" }),
+        tagId: integer("tag_id")
+            .notNull()
+            .references(() => tags.id, { onDelete: "cascade" }),
+    },
+    (t) => ({
+        pk: primaryKey({ columns: [t.projectId, t.tagId] }),
+    })
+);
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+    projectsToTags: many(projectsToTags),
+}));
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+    projectsToTags: many(projectsToTags),
+}));
+
+export const projectsToTagsRelations = relations(projectsToTags, ({ one }) => ({
+    project: one(projects, {
+        fields: [projectsToTags.projectId],
+        references: [projects.id],
+    }),
+    tag: one(tags, {
+        fields: [projectsToTags.tagId],
+        references: [tags.id],
+    }),
+}));
 
 export const users = pgTable("users", {
     id: text("id")
