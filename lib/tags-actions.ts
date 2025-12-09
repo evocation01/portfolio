@@ -1,12 +1,12 @@
 // lib/tags-actions.ts
 "use server";
 
+import { eq, inArray } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { auth } from "./auth";
 import { db } from "./db";
 import { projectsToTags, tags } from "./schema";
-import { auth } from "./auth";
-import { revalidatePath } from "next/cache";
-import { and, eq, isNull, inArray } from "drizzle-orm";
 
 const TagSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -14,7 +14,7 @@ const TagSchema = z.object({
     parentId: z
         .string()
         .optional()
-        .transform((val) => (val ? Number(val) : null)),
+        .transform((val) => (val && val !== "null" ? Number(val) : null)),
 });
 
 export async function createTag(prevState: any, formData: FormData) {
@@ -34,13 +34,16 @@ export async function createTag(prevState: any, formData: FormData) {
 
     const { name, isMasterTag, parentId } = validatedFields.data;
 
-    const tagNames = name.split(',').map(n => n.trim()).filter(Boolean);
+    const tagNames = name
+        .split(",")
+        .map((n) => n.trim())
+        .filter(Boolean);
 
     if (tagNames.length === 0) {
         return { message: "No tag names provided." };
     }
 
-    const newTags = tagNames.map(n => ({
+    const newTags = tagNames.map((n) => ({
         name: n,
         isMasterTag,
         parentId,
@@ -89,6 +92,7 @@ export async function updateTag(prevState: any, formData: FormData) {
         revalidatePath("/admin/tags");
         return { message: `Tag "${name}" updated successfully.` };
     } catch (e) {
+        console.error("Database update failed:", e);
         return { message: "Failed to update tag." };
     }
 }
@@ -120,9 +124,7 @@ export async function deleteTag(prevState: any, formData: FormData) {
                 .where(eq(tags.parentId, id));
 
             // 2. Delete all associations of this tag from projects
-            await tx
-                .delete(projectsToTags)
-                .where(eq(projectsToTags.tagId, id));
+            await tx.delete(projectsToTags).where(eq(projectsToTags.tagId, id));
 
             // 3. Delete the tag itself
             await tx.delete(tags).where(eq(tags.id, id));
@@ -136,8 +138,10 @@ export async function deleteTag(prevState: any, formData: FormData) {
 }
 
 const BulkUpdateParentSchema = z.object({
-    tagIds: z.string().transform((str) => str.split(',').map(Number)),
-    newParentId: z.string().transform((val) => (val === "null" ? null : Number(val))),
+    tagIds: z.string().transform((str) => str.split(",").map(Number)),
+    newParentId: z
+        .string()
+        .transform((val) => (val === "null" ? null : Number(val))),
 });
 
 export async function bulkUpdateTagsParent(prevState: any, formData: FormData) {
@@ -165,7 +169,9 @@ export async function bulkUpdateTagsParent(prevState: any, formData: FormData) {
             .where(inArray(tags.id, tagIds));
 
         revalidatePath("/admin/tags");
-        return { message: `Successfully updated parent for ${tagIds.length} tag(s).` };
+        return {
+            message: `Successfully updated parent for ${tagIds.length} tag(s).`,
+        };
     } catch (e) {
         return { message: "Failed to bulk update tags." };
     }

@@ -116,7 +116,7 @@ function EditTagDialog({ tag, allTags, children }: { tag: Tag; allTags: Tag[], c
                         <Label htmlFor={`parentId-${tag.id}`}>Parent Tag</Label>
                         <Select name="parentId" defaultValue={String(tag.parentId ?? "null")}>
                             <SelectTrigger><SelectValue placeholder="Select a parent" /></SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-h-60">
                                 <SelectItem value="null">None</SelectItem>
                                 {allTags.filter(t => t.id !== tag.id).map((t) => (
                                     <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
@@ -176,7 +176,7 @@ function BulkActions({ selectedTagIds, allTags, onClear }: { selectedTagIds: num
                         <Label htmlFor="newParentId">New Parent Tag</Label>
                         <Select name="newParentId">
                             <SelectTrigger><SelectValue placeholder="Select a parent" /></SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-h-60">
                                 <SelectItem value="null">None (make top-level)</SelectItem>
                                 {allTags.filter(t => !selectedTagIds.includes(t.id)).map((t) => (
                                     <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
