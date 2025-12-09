@@ -1,10 +1,10 @@
 "use server";
 
-import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import logger from "@/lib/logger";
 import { projects } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Resend } from "resend";
@@ -189,8 +189,8 @@ export async function sendContactEmail(
 
     try {
         await resend.emails.send({
-            from: "Contact Form <contact@send.hakanispir.dev>",
-            to: "contact@send.hakanispir.dev",
+            from: "Contact Form <contact@hakanispir.dev>",
+            to: "contact@hakanispir.dev",
             subject: `Portfolio Contact: ${subject}`,
             replyTo: email,
             html: `
