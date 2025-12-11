@@ -3,19 +3,42 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import logger from "@/lib/logger";
-import { projects, projectsToTags } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { projects, projectsToTags, tags } from "@/lib/schema";
+import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Resend } from "resend";
 import { z } from "zod";
 
-// Validation Schema
+// --- Helper Function for Tag Upsert ---
+async function findOrCreateTags(tagNames: string[], tx: typeof db) {
+    if (tagNames.length === 0) return [];
+
+    const existingTags = await tx.query.tags.findMany({
+        where: inArray(tags.name, tagNames),
+    });
+
+    const existingTagNames = new Set(existingTags.map(t => t.name.toLowerCase()));
+    const newTagNames = tagNames.filter(name => !existingTagNames.has(name.toLowerCase()));
+
+    let newTagIds: number[] = [];
+    if (newTagNames.length > 0) {
+        const newTags = await tx.insert(tags).values(
+            newTagNames.map(name => ({
+                name,
+                isMasterTag: false, // New tags are not masters by default
+                parentId: null,
+            }))
+        ).returning({ id: tags.id });
+        newTagIds = newTags.map(t => t.id);
+    }
+
+    return [...existingTags.map(t => t.id), ...newTagIds];
+}
+
+// --- Zod Schemas ---
 const ProjectSchema = z.object({
-    slug: z
-        .string()
-        .min(3)
-        .regex(/^[a-z0-9-]+$/, "Slug must be lowercase and hyphenated"),
+    slug: z.string().min(3).regex(/^[a-z0-9-]+$/, "Slug must be lowercase and hyphenated"),
     title_en: z.string().min(1),
     description_en: z.string().min(1),
     body_en: z.string().min(1),
@@ -26,111 +49,84 @@ const ProjectSchema = z.object({
     live_url: z.string().url().optional().or(z.literal("")),
     thumbnail_url: z.string().url().optional().or(z.literal("")),
     showOnHomepage: z.coerce.boolean(),
-    // Transform "1,2,3" string into array [1, 2, 3] of numbers
-    tags: z
-        .string()
-        .transform((str) => (str ? str.split(",").map(Number) : [])),
+    tags: z.string().transform((str) => str.split(',').map(t => t.trim()).filter(Boolean)),
 });
+
+const UpdateProjectSchema = ProjectSchema.extend({
+    id: z.coerce.number(),
+});
+
+
+// --- Server Actions ---
 
 export async function createProject(prevState: any, formData: FormData) {
     const session = await auth();
-    if (!session?.user) {
-        return { message: "Unauthorized" };
-    }
+    if (!session?.user) return { message: "Unauthorized" };
 
-    const rawData = Object.fromEntries(formData.entries());
-    const validatedFields = ProjectSchema.safeParse(rawData);
-
+    const validatedFields = ProjectSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!validatedFields.success) {
-        return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: "Missing Fields. Failed to Create Project.",
-        };
+        return { errors: validatedFields.error.flatten().fieldErrors, message: "Missing Fields. Failed to Create Project." };
     }
 
-    const { data } = validatedFields;
-    const { tags, ...projectData } = data;
+    const { tags: tagNames, ...projectData } = validatedFields.data;
 
     try {
         await db.transaction(async (tx) => {
-            const newProject = await tx
-                .insert(projects)
-                .values(projectData)
-                .returning({ id: projects.id });
-
+            // Create the project
+            const newProject = await tx.insert(projects).values(projectData).returning({ id: projects.id });
             const projectId = newProject[0].id;
 
-            if (tags && tags.length > 0) {
+            // Find or create tags and get their IDs
+            const tagIds = await findOrCreateTags(tagNames, tx);
+
+            // Link tags to the project
+            if (tagIds.length > 0) {
                 await tx.insert(projectsToTags).values(
-                    tags.map((tagId: number) => ({
-                        projectId,
-                        tagId,
-                    }))
+                    tagIds.map((tagId: number) => ({ projectId, tagId }))
                 );
             }
 
-            logger.info("Project created", {
-                slug: data.slug,
-                user: session.user?.email,
-            });
+            logger.info("Project created", { slug: projectData.slug, user: session.user?.email });
         });
     } catch (error) {
         logger.error("Database Error: Failed to Create Project", { error });
         return { message: "Database Error: Failed to Create Project." };
     }
 
-    revalidatePath("/en/projects");
-    revalidatePath("/tr/projects");
-    redirect("/en/admin");
+    revalidatePath("/admin");
+    revalidatePath("/projects");
+    redirect("/admin");
 }
 
-const UpdateProjectSchema = ProjectSchema.extend({
-    id: z.coerce.number(),
-});
 
 export async function updateProject(prevState: any, formData: FormData) {
     const session = await auth();
-    if (!session?.user) {
-        return { message: "Unauthorized" };
-    }
+    if (!session?.user) return { message: "Unauthorized" };
 
-    const rawData = Object.fromEntries(formData.entries());
-    const validatedFields = UpdateProjectSchema.safeParse(rawData);
-
+    const validatedFields = UpdateProjectSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!validatedFields.success) {
-        return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: "Missing Fields. Failed to Update Project.",
-        };
+        return { errors: validatedFields.error.flatten().fieldErrors, message: "Missing Fields. Failed to Update Project." };
     }
 
-    const { data } = validatedFields;
-    const { tags, id: projectId, ...projectData } = data;
+    const { id: projectId, tags: tagNames, ...projectData } = validatedFields.data;
 
     try {
         await db.transaction(async (tx) => {
-            await tx
-                .update(projects)
-                .set(projectData)
-                .where(eq(projects.id, projectId));
+            // Update the project
+            await tx.update(projects).set(projectData).where(eq(projects.id, projectId));
 
-            await tx
-                .delete(projectsToTags)
-                .where(eq(projectsToTags.projectId, projectId));
-
-            if (tags && tags.length > 0) {
+            // Find or create tags and get their IDs
+            const tagIds = await findOrCreateTags(tagNames, tx);
+            
+            // Sync the tags for the project
+            await tx.delete(projectsToTags).where(eq(projectsToTags.projectId, projectId));
+            if (tagIds.length > 0) {
                 await tx.insert(projectsToTags).values(
-                    tags.map((tagId: number) => ({
-                        projectId,
-                        tagId,
-                    }))
+                    tagIds.map((tagId: number) => ({ projectId, tagId }))
                 );
             }
 
-            logger.info("Project updated", {
-                slug: data.slug,
-                user: session.user?.email,
-            });
+            logger.info("Project updated", { slug: projectData.slug, user: session.user?.email });
         });
     } catch (error) {
         logger.error("Database Error: Failed to Update Project.", {
@@ -138,20 +134,16 @@ export async function updateProject(prevState: any, formData: FormData) {
             stack: error instanceof Error ? error.stack : null,
             error,
         });
-        return {
-            message:
-                "Database Error: Failed to update. Check server logs for details.",
-        };
+        return { message: "Database Error: Failed to update. Check server logs for details." };
     }
 
-    revalidatePath("/en/projects");
-    revalidatePath("/tr/projects");
-    revalidatePath(`/en/projects/${data.slug}`);
-    revalidatePath(`/tr/projects/${data.slug}`);
-    redirect("/en/admin");
+    revalidatePath("/admin");
+    revalidatePath("/projects");
+    revalidatePath(`/projects/${projectData.slug}`);
+    redirect("/admin");
 }
 
-// New Contact Schema
+// ... (sendContactEmail remains the same)
 const ContactSchema = z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email address"),

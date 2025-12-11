@@ -14,21 +14,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { deleteImage, uploadImage } from "@/lib/upload-actions";
-import { type projects, type tags } from "@/lib/schema";
+import { type projects } from "@/lib/schema";
 import { Loader2, Save, Trash2, UploadCloud } from "lucide-react";
 import Image from "next/image";
 import { useActionState, useState, useTransition, useEffect } from "react";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { MultiSelect, OptionType } from "../ui/multi-select";
 import { toast } from "sonner";
 
 type Project = typeof projects.$inferSelect;
-type Tag = typeof tags.$inferSelect;
-type ProjectWithTags = Project & {
-    projectsToTags: { tagId: number }[];
-};
 
 type ProjectServerAction = (
     prevState: { message?: string; errors?: Record<string, string[]> },
@@ -36,30 +31,21 @@ type ProjectServerAction = (
 ) => Promise<{ message?: string; errors?: Record<string, string[]> }>;
 
 interface ProjectFormProps {
-    project?: ProjectWithTags;
-    allTags: Tag[];
+    project?: Project;
+    initialTags?: string;
     serverAction: ProjectServerAction;
     content: any;
 }
 
 export function ProjectForm({
     project,
-    allTags,
+    initialTags = "",
     serverAction,
     content,
 }: ProjectFormProps) {
     const [isPending, startTransition] = useTransition();
     const [uploading, setUploading] = useState(false);
     const isEditMode = !!project;
-
-    const initialTagIds =
-        project?.projectsToTags.map((t) => String(t.tagId)) ?? [];
-    const [selectedTags, setSelectedTags] = useState<string[]>(initialTagIds);
-
-    const tagOptions: OptionType[] = allTags.map((tag) => ({
-        label: tag.name,
-        value: String(tag.id),
-    }));
 
     const [formData, setFormData] = useState({
         slug: project?.slug ?? "",
@@ -69,6 +55,7 @@ export function ProjectForm({
         title_tr: project?.title_tr ?? "",
         description_tr: project?.description_tr ?? "",
         body_tr: project?.body_tr ?? "",
+        tags: initialTags,
         github_url: project?.github_url ?? "",
         live_url: project?.live_url ?? "",
         thumbnail_url: project?.thumbnail_url ?? "",
@@ -135,7 +122,6 @@ export function ProjectForm({
                 formDataObj.append(key, value || "");
             }
         });
-        formDataObj.append("tags", selectedTags.join(","));
         if (isEditMode) {
             formDataObj.append("id", String(project.id));
         }
@@ -229,11 +215,12 @@ export function ProjectForm({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tags">{content.tagsLabel}</Label>
-                            <MultiSelect
-                                options={tagOptions}
-                                selected={selectedTags}
-                                onChange={setSelectedTags}
-                                placeholder="Select tags..."
+                            <Input
+                                id="tags"
+                                name="tags"
+                                placeholder={content.tagsPlaceholder.value}
+                                value={formData.tags}
+                                onChange={handleInputChange}
                             />
                         </div>
                     </div>

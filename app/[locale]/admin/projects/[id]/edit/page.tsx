@@ -17,24 +17,27 @@ async function EditFormLoader({
     projectId: number;
     content: any;
 }) {
-    const [project, allTags] = await Promise.all([
-        db.query.projects.findFirst({
-            where: eq(projects.id, projectId),
-            with: {
-                projectsToTags: true,
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
+        with: {
+            projectsToTags: {
+                with: {
+                    tag: true,
+                },
             },
-        }),
-        db.query.tags.findMany(),
-    ]);
+        },
+    });
 
     if (!project) {
         notFound();
     }
 
+    const initialTags = project.projectsToTags.map((t) => t.tag.name).join(", ");
+
     return (
         <ProjectForm
             project={project}
-            allTags={allTags}
+            initialTags={initialTags}
             serverAction={updateProject}
             content={content}
         />
