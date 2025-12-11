@@ -78,20 +78,24 @@ export async function ProjectsList({ content }: { content: any }) {
                                         <div className="flex gap-2 text-muted-foreground">
                                             {project.github_url && (
                                                 <a
+                                                    key="github"
                                                     href={project.github_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
+                                                    className="text-muted-foreground hover:text-foreground"
                                                 >
-                                                    <Github className="h-4 w-4 hover:text-foreground" />
+                                                    <Github className="h-4 w-4" />
                                                 </a>
                                             )}
                                             {project.live_url && (
                                                 <a
+                                                    key="live"
                                                     href={project.live_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
+                                                    className="text-muted-foreground hover:text-foreground"
                                                 >
-                                                    <ExternalLink className="h-4 w-4 hover:text-foreground" />
+                                                    <ExternalLink className="h-4 w-4" />
                                                 </a>
                                             )}
                                         </div>
