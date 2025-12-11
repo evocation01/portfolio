@@ -24,28 +24,30 @@ type Transaction = PgTransaction<
 async function findOrCreateTags(tagNames: string[], tx: Transaction) {
     if (tagNames.length === 0) return [];
 
-    const lowerCaseTagNames = tagNames.map(name => name.toLowerCase());
-    
-    const existingTags = await tx.query.tags.findMany({
-        where: inArray(tags.name, lowerCaseTagNames),
-    });
+    const allDbTags = await tx.query.tags.findMany();
+    const dbTagMap = new Map(allDbTags.map(t => [t.name.toLowerCase(), t]));
 
-    const existingTagNames = new Set(existingTags.map(t => t.name.toLowerCase()));
-    const newTagNames = tagNames.filter(name => !existingTagNames.has(name.toLowerCase()));
+    const tagIds: number[] = [];
+    const tagsToCreate: { name: string }[] = [];
 
-    let newTagIds: number[] = [];
-    if (newTagNames.length > 0) {
-        const newTags = await tx.insert(tags).values(
-            newTagNames.map(name => ({
-                name,
-                isMasterTag: false,
-                parentId: null,
-            }))
-        ).returning({ id: tags.id });
-        newTagIds = newTags.map(t => t.id);
+    for (const name of tagNames) {
+        const existingTag = dbTagMap.get(name.toLowerCase());
+        if (existingTag) {
+            tagIds.push(existingTag.id);
+        } else {
+            // Avoid adding duplicates to the create list
+            if (!tagsToCreate.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+                 tagsToCreate.push({ name });
+            }
+        }
     }
 
-    return [...existingTags.map(t => t.id), ...newTagIds];
+    if (tagsToCreate.length > 0) {
+        const newTags = await tx.insert(tags).values(tagsToCreate).returning({ id: tags.id });
+        tagIds.push(...newTags.map(t => t.id));
+    }
+
+    return tagIds;
 }
 
 // --- Zod Schemas ---
@@ -141,11 +143,7 @@ export async function updateProject(prevState: any, formData: FormData) {
             logger.info("Project updated", { slug: projectData.slug, user: session.user?.email });
         });
     } catch (error) {
-        logger.error("Database Error: Failed to Update Project.", {
-            message: error instanceof Error ? error.message : "Unknown error",
-            stack: error instanceof Error ? error.stack : null,
-            error,
-        });
+        logger.error("Database Error: Failed to Update Project.", { error });
         return { message: "Database Error: Failed to update. Check server logs for details." };
     }
 
