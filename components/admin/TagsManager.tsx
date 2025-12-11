@@ -49,7 +49,7 @@ type ActionState = { message?: string; success?: boolean };
 // --- Sub-components ---
 
 function CreateTagForm() {
-    const [state, formAction, isPending] = useActionState<ActionState, FormData>(createTag, undefined);
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(createTag, {});
 
     useEffect(() => {
         if (state?.message) {
@@ -93,7 +93,7 @@ function CreateTagForm() {
 }
 
 function EditTagDialog({ tag, allTags, children }: { tag: Tag; allTags: Tag[]; children: React.ReactNode }) {
-    const [state, formAction, isPending] = useActionState<ActionState, FormData>(updateTag, undefined);
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(updateTag, {});
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
@@ -145,7 +145,7 @@ function EditTagDialog({ tag, allTags, children }: { tag: Tag; allTags: Tag[]; c
 }
 
 function DeleteTagButton({ tagId }: { tagId: number }) {
-    const [state, formAction, isPending] = useActionState<ActionState, FormData>(deleteTag, undefined);
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(deleteTag, {});
 
     useEffect(() => {
         if (state?.message) {
@@ -164,7 +164,7 @@ function DeleteTagButton({ tagId }: { tagId: number }) {
 }
 
 function BulkEditDialog({ selectedTagIds, allTags, onClear }: { selectedTagIds: number[]; allTags: Tag[]; onClear: () => void; }) {
-    const [state, formAction, isPending] = useActionState<ActionState, FormData>(bulkUpdateTags, undefined);
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(bulkUpdateTags, {});
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
