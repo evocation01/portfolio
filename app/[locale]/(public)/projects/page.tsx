@@ -29,8 +29,8 @@ export async function generateMetadata({
     };
 
     return {
-        title: content.metaTitle,
-        description: content.metaDescription,
+        title: content.metaTitle.value,
+        description: content.metaDescription.value,
         alternates: {
             canonical: getLocalizedUrl(awaitedParams.locale),
             languages: {
@@ -80,7 +80,9 @@ export default async function ProjectsPage(props: {
     // 2. Determine tag IDs to filter by
     let tagIdsToFilter: number[] = [];
     if (selectedTagName) {
-        const selectedTag = allTags.find((t) => t.name === selectedTagName);
+        const selectedTag = allTags.find(
+            (t) => t.name.toLowerCase() === selectedTagName.toLowerCase()
+        );
         if (selectedTag) {
             if (selectedTag.isMasterTag) {
                 tagIdsToFilter = [

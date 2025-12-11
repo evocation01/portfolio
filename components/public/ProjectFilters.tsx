@@ -59,7 +59,7 @@ export function ProjectFilters({
     };
 
     return (
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-start mb-8 gap-4">
             <div className="relative w-full md:max-w-xs">
                 <Input
                     placeholder={searchPlaceholder}
@@ -70,7 +70,7 @@ export function ProjectFilters({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             </div>
             <ScrollArea className="w-full md:w-auto">
-                <div className="flex w-max space-x-2">
+                <div className="flex w-max space-x-2 pb-4">
                     <Button
                         variant={!activeTag ? "default" : "outline"}
                         onClick={() => handleTagFilter("")}
