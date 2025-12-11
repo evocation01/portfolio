@@ -54,9 +54,9 @@ const PROJECTS_PER_PAGE = 6;
 
 export default async function ProjectsPage(props: {
     params: Promise<{ locale: string }>;
-    searchParams?: { [key: string]: string | string[] | undefined };
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-    const searchParams = props.searchParams;
+    const searchParams = (await props.searchParams);
     const params = await props.params;
     const locale = params.locale as "en" | "tr";
     const content = getIntlayer(projectsContent.key, locale);
@@ -87,9 +87,9 @@ export default async function ProjectsPage(props: {
             if (selectedTag.isMasterTag) {
                 tagIdsToFilter = [
                     selectedTag.id,
-                    ...masterTags
+                    ...(masterTags
                         .find((mt) => mt.id === selectedTag.id)
-                        ?.children.map((c) => c.id) ?? [],
+                        ?.children.map((c) => c.id) ?? []),
                 ];
             } else {
                 tagIdsToFilter = [selectedTag.id];
