@@ -1,6 +1,6 @@
 // components/admin/TagsManager.tsx
 "use client";
-import { useActionState, useEffect, useState, useMemo } from "react";
+import { useActionState, useEffect, useState, useMemo, useCallback } from "react";
 import {
     createTag,
     updateTag,
@@ -44,22 +44,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Edit, Plus, Loader2, GitMerge } from "lucide-react";
 
 type Tag = typeof tags.$inferSelect;
-
-// --- Hooks ---
-function useActionToast(state: { message?: string } | undefined, callback?: () => void) {
-    useEffect(() => {
-        if (state?.message) {
-            toast(state.message);
-            callback?.();
-        }
-    }, [state, callback]);
-}
+type ActionState = { message?: string; success?: boolean };
 
 // --- Sub-components ---
 
 function CreateTagForm() {
-    const [state, formAction, isPending] = useActionState(createTag, undefined);
-    useActionToast(state);
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(createTag, undefined);
+
+    useEffect(() => {
+        if (state?.message) {
+            toast(state.message);
+        }
+    }, [state]);
 
     return (
         <Card>
@@ -96,11 +92,21 @@ function CreateTagForm() {
     );
 }
 
-function EditTagDialog({ tag, allTags, children }: { tag: Tag; allTags: Tag[], children: React.ReactNode }) {
-    const [state, formAction, isPending] = useActionState(updateTag, undefined);
-    useActionToast(state);
+function EditTagDialog({ tag, allTags, children }: { tag: Tag; allTags: Tag[]; children: React.ReactNode }) {
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(updateTag, undefined);
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        if (state?.message) {
+            toast(state.message);
+            if (state.success) {
+                setOpen(false);
+            }
+        }
+    }, [state]);
+
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
@@ -139,8 +145,14 @@ function EditTagDialog({ tag, allTags, children }: { tag: Tag; allTags: Tag[], c
 }
 
 function DeleteTagButton({ tagId }: { tagId: number }) {
-    const [state, formAction, isPending] = useActionState(deleteTag, undefined);
-    useActionToast(state);
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(deleteTag, undefined);
+
+    useEffect(() => {
+        if (state?.message) {
+            toast(state.message);
+        }
+    }, [state]);
+
     return (
         <form action={formAction}>
             <input type="hidden" name="id" value={tagId} />
@@ -152,14 +164,18 @@ function DeleteTagButton({ tagId }: { tagId: number }) {
 }
 
 function BulkEditDialog({ selectedTagIds, allTags, onClear }: { selectedTagIds: number[]; allTags: Tag[]; onClear: () => void; }) {
-    const [state, formAction, isPending] = useActionState(bulkUpdateTags, undefined);
-    useActionToast(state, () => {
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(bulkUpdateTags, undefined);
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        if (state?.message) {
+            toast(state.message);
+        }
         if (state?.success) {
             onClear();
             setOpen(false);
         }
-    });
-    const [open, setOpen] = useState(false);
+    }, [state, onClear]);
 
     if (selectedTagIds.length === 0) return null;
 
@@ -265,6 +281,8 @@ export function TagsManager({ allTags }: { allTags: Tag[] }) {
             checked ? [...prev, id] : prev.filter(tagId => tagId !== id)
         );
     };
+    
+    const onClear = useCallback(() => setSelectedTagIds([]), []);
 
     const renderTree = (tags: Tag[]) => (
         <Accordion type="multiple" className="w-full space-y-2">
@@ -290,7 +308,7 @@ export function TagsManager({ allTags }: { allTags: Tag[] }) {
                     <CardTitle>Existing Tags</CardTitle>
                     <div className="flex items-center justify-between">
                          <p className="text-muted-foreground">Organize your tags into a hierarchy.</p>
-                         <BulkEditDialog selectedTagIds={selectedTagIds} allTags={allTags} onClear={() => setSelectedTagIds([])} />
+                         <BulkEditDialog selectedTagIds={selectedTagIds} allTags={allTags} onClear={onClear} />
                     </div>
                 </CardHeader>
                 <CardContent>
