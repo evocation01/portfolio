@@ -100,7 +100,7 @@ export default async function ProjectsPage(props: {
     // 3. Construct WHERE clauses
     const whereClauses = [];
     if (query) {
-        const searchTerm = `%${query}%`;
+        const searchTerm = `%${query.trim()}%`;
         whereClauses.push(
             or(
                 ilike(projects.title_en, searchTerm),
@@ -112,11 +112,19 @@ export default async function ProjectsPage(props: {
     }
 
     if (tagIdsToFilter.length > 0) {
-        const subquery = db
+        const projectIdsWithTag = await db
             .select({ projectId: projectsToTags.projectId })
             .from(projectsToTags)
             .where(inArray(projectsToTags.tagId, tagIdsToFilter));
-        whereClauses.push(inArray(projects.id, subquery));
+
+        const ids = projectIdsWithTag.map((p) => p.projectId);
+
+        if (ids.length === 0) {
+            // If no projects match the tag, create an impossible condition
+            whereClauses.push(inArray(projects.id, [-1]));
+        } else {
+            whereClauses.push(inArray(projects.id, ids));
+        }
     }
 
     const where = whereClauses.length > 0 ? and(...whereClauses) : undefined;

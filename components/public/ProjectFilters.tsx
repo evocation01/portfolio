@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/hover-card";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useTransition, useState, useEffect, useCallback } from "react";
 import { type tags } from "@/lib/schema";
 
 type Tag = typeof tags.$inferSelect;
@@ -31,8 +31,9 @@ export function ProjectFilters({
     const [isPending, startTransition] = useTransition();
 
     const activeTag = searchParams.get("tag") || "";
+    const [inputValue, setInputValue] = useState(searchParams.get("query") || "");
 
-    const handleSearch = (term: string) => {
+    const handleSearch = useCallback((term: string) => {
         const params = new URLSearchParams(searchParams);
         params.set("page", "1");
         if (term) {
@@ -43,7 +44,20 @@ export function ProjectFilters({
         startTransition(() => {
             replace(`${pathname}?${params.toString()}`);
         });
-    };
+    }, [searchParams, pathname, replace]);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (inputValue !== (searchParams.get("query") || "")) {
+                handleSearch(inputValue);
+            }
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [inputValue, handleSearch, searchParams]);
+
 
     const handleTagFilter = (tagName: string) => {
         const params = new URLSearchParams(searchParams);
@@ -63,8 +77,8 @@ export function ProjectFilters({
             <div className="relative w-full md:max-w-xs">
                 <Input
                     placeholder={searchPlaceholder}
-                    defaultValue={searchParams.get("query")?.toString()}
-                    onChange={(e) => handleSearch(e.target.value)}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                     className="pl-10"
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
