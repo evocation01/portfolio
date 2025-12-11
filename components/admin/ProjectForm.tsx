@@ -1,6 +1,7 @@
+"use client";
+
 import { type ReactNode } from "react";
 // components/admin/ProjectForm.tsx
-"use client";
 
 import { Button } from "@/components/ui/button";
 import {
