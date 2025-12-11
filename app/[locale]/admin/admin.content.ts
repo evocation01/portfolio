@@ -172,3 +172,5 @@ const adminContent = {
 } satisfies Dictionary;
 
 export default adminContent;
+
+export type AdminContentType = typeof adminContent.content;

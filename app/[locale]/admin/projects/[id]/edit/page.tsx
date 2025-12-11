@@ -8,14 +8,14 @@ import { eq } from "drizzle-orm";
 import { getIntlayer } from "next-intlayer";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import adminContent from "../../../admin.content";
+import adminContent, { type AdminContentType } from "../../../admin.content";
 
 async function EditFormLoader({
     projectId,
     content,
 }: {
     projectId: number;
-    content: any;
+    content: AdminContentType;
 }) {
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),

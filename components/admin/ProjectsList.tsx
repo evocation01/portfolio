@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 // components/admin/ProjectsList.tsx
 import { DeleteProjectButton } from "./DeleteProjectButton";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 
-export async function ProjectsList({ content }: { content: any }) {
+import { type AdminContentType } from "@/app/[locale]/admin/admin.content";
+
+export async function ProjectsList({ content }: { content: AdminContentType }) {
     const allProjects = await db
         .select()
         .from(projects)
@@ -20,24 +23,24 @@ export async function ProjectsList({ content }: { content: any }) {
         <>
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold">
-                    {content.existingProjects} ({allProjects.length})
+                    {content.existingProjects as unknown as ReactNode} ({allProjects.length})
                 </h3>
                 <Button asChild>
                     <Link
                         href="/admin/projects/create"
                         className="flex items-center gap-2"
                     >
-                        <Plus className="h-4 w-4" /> {content.addNewProject}
+                        <Plus className="h-4 w-4" /> {content.addNewProject as unknown as ReactNode}
                     </Link>
                 </Button>
             </div>
 
             {allProjects.length === 0 ? (
                 <div className="mt-8 col-span-full flex flex-col items-center justify-center py-16 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/50">
-                    <p>{content.noProjectsFound}</p>
+                    <p>{content.noProjectsFound as unknown as ReactNode}</p>
                     <Button variant="link" asChild>
                         <Link href="/admin/projects/create">
-                            {content.createFirstProject}
+                            {content.createFirstProject as unknown as ReactNode}
                         </Link>
                     </Button>
                 </div>
@@ -111,14 +114,14 @@ export async function ProjectsList({ content }: { content: any }) {
                                                     href={`/admin/projects/${project.id}/edit`}
                                                 >
                                                     <Edit className="h-3 w-3 mr-1" />{" "}
-                                                    {content.editButton}
+                                                    {content.editButton as unknown as ReactNode}
                                                 </Link>
                                             </Button>
                                             <DeleteProjectButton
                                                 projectId={project.id}
-                                                deleteButtonText={content.deleteButton}
-                                                deletingButtonText={content.deletingButton}
-                                                deleteConfirmationText={content.deleteConfirmation}
+                                                deleteButtonText={content.deleteButton as unknown as string}
+                                                deletingButtonText={content.deletingButton as unknown as string}
+                                                deleteConfirmationText={content.deleteConfirmation as unknown as string}
                                             />
                                         </div>
                                     </div>

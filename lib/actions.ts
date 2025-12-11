@@ -4,18 +4,30 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import logger from "@/lib/logger";
 import { projects, projectsToTags, tags } from "@/lib/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, type ExtractTablesWithRelations } from "drizzle-orm";
+import { type PgTransaction } from "drizzle-orm/pg-core";
+import { type VercelPgQueryResultHKT } from "drizzle-orm/vercel-postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Resend } from "resend";
 import { z } from "zod";
+import * as schema from "./schema";
+
+// --- Type Alias for Transaction ---
+type Transaction = PgTransaction<
+    VercelPgQueryResultHKT,
+    typeof schema,
+    ExtractTablesWithRelations<typeof schema>
+>;
 
 // --- Helper Function for Tag Upsert ---
-async function findOrCreateTags(tagNames: string[], tx: typeof db) {
+async function findOrCreateTags(tagNames: string[], tx: Transaction) {
     if (tagNames.length === 0) return [];
 
+    const lowerCaseTagNames = tagNames.map(name => name.toLowerCase());
+    
     const existingTags = await tx.query.tags.findMany({
-        where: inArray(tags.name, tagNames),
+        where: inArray(tags.name, lowerCaseTagNames),
     });
 
     const existingTagNames = new Set(existingTags.map(t => t.name.toLowerCase()));
@@ -26,7 +38,7 @@ async function findOrCreateTags(tagNames: string[], tx: typeof db) {
         const newTags = await tx.insert(tags).values(
             newTagNames.map(name => ({
                 name,
-                isMasterTag: false, // New tags are not masters by default
+                isMasterTag: false,
                 parentId: null,
             }))
         ).returning({ id: tags.id });

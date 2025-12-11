@@ -294,7 +294,10 @@ export function TagsManager({ allTags }: { allTags: Tag[] }) {
                     selectedTagIds={selectedTagIds}
                     onSelectionChange={handleSelectionChange}
                 >
-                    {tagMap.get(tag.id)?.children.length > 0 && renderTree(tagMap.get(tag.id)!.children)}
+                    {(() => {
+                        const children = tagMap.get(tag.id)?.children;
+                        return children && children.length > 0 ? renderTree(children) : null;
+                    })()}
                 </TagListItem>
             ))}
         </Accordion>

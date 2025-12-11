@@ -14,8 +14,8 @@ export async function generateMetadata(props: {
     const params = await props.params;
     const content = getIntlayer(aboutContent.key, params.locale);
     return {
-        title: content.pageTitle,
-        description: content.profile,
+        title: content.pageTitle.value,
+        description: content.profile.value,
     };
 }
 
@@ -28,32 +28,32 @@ export default function AboutPageClient() {
                 <Avatar className="h-20 w-20 md:h-24 md:w-24">
                     <AvatarImage
                         src="/assets/headshot.jpg"
-                        alt={aboutContent.name}
+                        alt={aboutContent.name.value}
                     />
                     <AvatarFallback>HI</AvatarFallback>
                 </Avatar>
                 <div className="text-center md:text-left">
                     <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight lg:text-5xl">
-                        {aboutContent.name}
+                        {aboutContent.name.value}
                     </h1>
                     <p className="mt-2 text-lg sm:text-xl text-muted-foreground">
-                        {aboutContent.jobTitle}
+                        {aboutContent.jobTitle.value}
                     </p>
                 </div>
             </header>
 
             <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.pageTitle}
+                    {aboutContent.pageTitle.value}
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                    {aboutContent.profile}
+                    {aboutContent.profile.value}
                 </p>
             </section>
 
             <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.skillsTitle}
+                    {aboutContent.skillsTitle.value}
                 </h2>
                 <div className="flex flex-wrap gap-2">
                     {aboutContent.skills.map((skill: any, index: number) => (
@@ -70,24 +70,24 @@ export default function AboutPageClient() {
 
             <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.experienceTitle}
+                    {aboutContent.experienceTitle.value}
                 </h2>
                 <div className="space-y-8">
                     {aboutContent.experience.map((job: any, index: number) => (
                         <div key={index}>
                             <h3 className="text-xl sm:text-2xl font-semibold">
-                                {job.role}
+                                {job.role.value}
                             </h3>
                             <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
                                 <p className="font-medium text-primary">
-                                    {job.company}
+                                    {job.company.value}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                    {job.period}
+                                    {job.period.value}
                                 </p>
                             </div>
                             <p className="mt-2 text-muted-foreground">
-                                {job.description}
+                                {job.description.value}
                             </p>
                         </div>
                     ))}
@@ -96,18 +96,18 @@ export default function AboutPageClient() {
 
             <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.educationTitle}
+                    {aboutContent.educationTitle.value}
                 </h2>
                 <div>
                     <h3 className="text-xl sm:text-2xl font-semibold">
-                        {aboutContent.education.degree}
+                        {aboutContent.education.degree.value}
                     </h3>
                     <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
                         <p className="font-medium text-primary">
-                            {aboutContent.education.institution}
+                            {aboutContent.education.institution.value}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                            {aboutContent.education.period}
+                            {aboutContent.education.period.value}
                         </p>
                     </div>
                 </div>
@@ -115,12 +115,12 @@ export default function AboutPageClient() {
 
             <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.licensesTitle}
+                    {aboutContent.licensesTitle.value}
                 </h2>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     {aboutContent.licenses.map(
                         (license: any, index: number) => (
-                            <li key={index}>{license}</li>
+                            <li key={index}>{license.value}</li>
                         )
                     )}
                 </ul>
@@ -128,12 +128,12 @@ export default function AboutPageClient() {
 
             <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.languagesTitle}
+                    {aboutContent.languagesTitle.value}
                 </h2>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     {aboutContent.languages.map(
                         (language: any, index: number) => (
-                            <li key={index}>{language}</li>
+                            <li key={index}>{language.value}</li>
                         )
                     )}
                 </ul>
@@ -141,12 +141,12 @@ export default function AboutPageClient() {
 
             <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.volunteeringTitle}
+                    {aboutContent.volunteeringTitle.value}
                 </h2>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     {aboutContent.volunteering.map(
                         (role: any, index: number) => (
-                            <li key={index}>{role}</li>
+                            <li key={index}>{role.value}</li>
                         )
                     )}
                 </ul>
@@ -154,7 +154,7 @@ export default function AboutPageClient() {
 
             <section>
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
-                    {aboutContent.resumeTitle}
+                    {aboutContent.resumeTitle.value}
                 </h2>
                 <ResumeViewer />
             </section>

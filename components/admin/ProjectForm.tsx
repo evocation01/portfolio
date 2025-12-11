@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 // components/admin/ProjectForm.tsx
 "use client";
 
@@ -22,6 +23,7 @@ import { MarkdownEditor } from "./MarkdownEditor";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { type AdminContentType } from "@/app/[locale]/admin/admin.content";
 
 type Project = typeof projects.$inferSelect;
 
@@ -34,7 +36,7 @@ interface ProjectFormProps {
     project?: Project;
     initialTags?: string;
     serverAction: ProjectServerAction;
-    content: any;
+    content: AdminContentType;
 }
 
 export function ProjectForm({
@@ -136,25 +138,25 @@ export function ProjectForm({
                 <CardHeader>
                     <CardTitle>
                         {isEditMode
-                            ? content.editProjectTitle
-                            : content.createProjectTitle}
+                            ? (content.editProjectTitle as unknown as ReactNode)
+                            : (content.createProjectTitle as unknown as ReactNode)}
                     </CardTitle>
                     <CardDescription>
                         {isEditMode
-                            ? content.editProjectDescription
-                            : content.createProjectDescription}
+                            ? (content.editProjectDescription as unknown as ReactNode)
+                            : (content.createProjectDescription as unknown as ReactNode)}
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
-                        <Label>{content.thumbnailLabel}</Label>
+                        <Label>{content.thumbnailLabel as unknown as ReactNode}</Label>
                         <div className="flex items-center gap-4">
                             {formData.thumbnail_url && (
                                 <div key="thumb-preview" className="relative group">
                                     <Image
                                         src={formData.thumbnail_url}
-                                        alt={content.thumbnailAlt}
+                                        alt={content.thumbnailAlt as unknown as string}
                                         width={80}
                                         height={80}
                                         className="rounded-md object-cover w-20 h-20"
@@ -197,28 +199,28 @@ export function ProjectForm({
                             onCheckedChange={handleSwitchChange}
                         />
                         <Label htmlFor="showOnHomepage">
-                            {content.showOnHomepageLabel}
+                            {content.showOnHomepageLabel as unknown as ReactNode}
                         </Label>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="slug">{content.slugLabel}</Label>
+                            <Label htmlFor="slug">{content.slugLabel as unknown as ReactNode}</Label>
                             <Input
                                 id="slug"
                                 name="slug"
-                                placeholder={content.slugPlaceholder.value}
+                                placeholder={content.slugPlaceholder as unknown as string}
                                 value={formData.slug}
                                 onChange={handleInputChange}
                                 required
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="tags">{content.tagsLabel}</Label>
+                            <Label htmlFor="tags">{content.tagsLabel as unknown as ReactNode}</Label>
                             <Input
                                 id="tags"
                                 name="tags"
-                                placeholder={content.tagsPlaceholder.value}
+                                placeholder={content.tagsPlaceholder as unknown as string}
                                 value={formData.tags}
                                 onChange={handleInputChange}
                             />
@@ -226,21 +228,21 @@ export function ProjectForm({
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="github_url">{content.githubUrlLabel}</Label>
+                            <Label htmlFor="github_url">{content.githubUrlLabel as unknown as ReactNode}</Label>
                             <Input
                                 id="github_url"
                                 name="github_url"
-                                placeholder={content.githubUrlPlaceholder.value}
+                                placeholder={content.githubUrlPlaceholder as unknown as string}
                                 value={formData.github_url}
                                 onChange={handleInputChange}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="live_url">{content.liveUrlLabel}</Label>
+                            <Label htmlFor="live_url">{content.liveUrlLabel as unknown as ReactNode}</Label>
                             <Input
                                 id="live_url"
                                 name="live_url"
-                                placeholder={content.liveUrlPlaceholder.value}
+                                placeholder={content.liveUrlPlaceholder as unknown as string}
                                 value={formData.live_url}
                                 onChange={handleInputChange}
                             />
@@ -249,17 +251,17 @@ export function ProjectForm({
 
                     <Tabs defaultValue="en" className="w-full mt-6">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="en">{content.englishTab}</TabsTrigger>
-                            <TabsTrigger value="tr">{content.turkishTab}</TabsTrigger>
+                            <TabsTrigger value="en">{content.englishTab as unknown as ReactNode}</TabsTrigger>
+                            <TabsTrigger value="tr">{content.turkishTab as unknown as ReactNode}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="en" className="space-y-4 mt-4">
                             <div className="space-y-2">
-                                <Label htmlFor="title_en">{content.titleEnLabel}</Label>
+                                <Label htmlFor="title_en">{content.titleEnLabel as unknown as ReactNode}</Label>
                                 <Input
                                     id="title_en"
                                     name="title_en"
-                                    placeholder={content.titleEnPlaceholder.value}
+                                    placeholder={content.titleEnPlaceholder as unknown as string}
                                     value={formData.title_en}
                                     onChange={handleInputChange}
                                     required
@@ -267,19 +269,19 @@ export function ProjectForm({
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description_en">
-                                    {content.descriptionEnLabel}
+                                    {content.descriptionEnLabel as unknown as ReactNode}
                                 </Label>
                                 <Textarea
                                     id="description_en"
                                     name="description_en"
-                                    placeholder={content.descriptionPlaceholder.value}
+                                    placeholder={content.descriptionPlaceholder as unknown as string}
                                     value={formData.description_en}
                                     onChange={handleInputChange}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="body_en">{content.bodyEnLabel}</Label>
+                                <Label htmlFor="body_en">{content.bodyEnLabel as unknown as ReactNode}</Label>
                                 <MarkdownEditor
                                     id="body_en"
                                     name="body_en"
@@ -291,11 +293,11 @@ export function ProjectForm({
 
                         <TabsContent value="tr" className="space-y-4 mt-4">
                             <div className="space-y-2">
-                                <Label htmlFor="title_tr">{content.titleTrLabel}</Label>
+                                <Label htmlFor="title_tr">{content.titleTrLabel as unknown as ReactNode}</Label>
                                 <Input
                                     id="title_tr"
                                     name="title_tr"
-                                    placeholder={content.titleEnPlaceholder.value}
+                                    placeholder={content.titleEnPlaceholder as unknown as string}
                                     value={formData.title_tr}
                                     onChange={handleInputChange}
                                     required
@@ -303,19 +305,19 @@ export function ProjectForm({
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description_tr">
-                                    {content.descriptionTrLabel}
+                                    {content.descriptionTrLabel as unknown as ReactNode}
                                 </Label>
                                 <Textarea
                                     id="description_tr"
                                     name="description_tr"
-                                    placeholder={content.descriptionPlaceholder.value}
+                                    placeholder={content.descriptionPlaceholder as unknown as string}
                                     value={formData.description_tr}
                                     onChange={handleInputChange}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="body_tr">{content.bodyTrLabel}</Label>
+                                <Label htmlFor="body_tr">{content.bodyTrLabel as unknown as ReactNode}</Label>
                                 <MarkdownEditor
                                     id="body_tr"
                                     name="body_tr"
@@ -333,18 +335,18 @@ export function ProjectForm({
                         type="button"
                         onClick={() => history.back()}
                     >
-                        {content.cancelButton}
+                        {content.cancelButton as unknown as ReactNode}
                     </Button>
                     <Button type="submit" disabled={isPending || uploading}>
                         {isPending ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                {content.savingButton}
+                                {content.savingButton as unknown as ReactNode}
                             </>
                         ) : (
                             <>
                                 <Save className="mr-2 h-4 w-4" />
-                                {isEditMode ? content.updateButton : content.createButton}
+                                {isEditMode ? (content.updateButton as unknown as ReactNode) : (content.createButton as unknown as ReactNode)}
                             </>
                         )}
                     </Button>
