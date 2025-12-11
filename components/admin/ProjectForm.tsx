@@ -151,7 +151,7 @@ export function ProjectForm({
                         <Label>{content.thumbnailLabel}</Label>
                         <div className="flex items-center gap-4">
                             {formData.thumbnail_url && (
-                                <div className="relative group">
+                                <div key="thumb-preview" className="relative group">
                                     <Image
                                         src={formData.thumbnail_url}
                                         alt={content.thumbnailAlt}
@@ -170,7 +170,7 @@ export function ProjectForm({
                                     </Button>
                                 </div>
                             )}
-                            <div className="relative">
+                            <div key="thumb-input" className="relative">
                                 <Input
                                     id="thumbnail"
                                     type="file"
