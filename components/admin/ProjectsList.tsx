@@ -1,6 +1,5 @@
 import { type ReactNode } from "react";
 // components/admin/ProjectsList.tsx
-import { DeleteProjectButton } from "./DeleteProjectButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/lib/db";
@@ -9,7 +8,7 @@ import { desc } from "drizzle-orm";
 import { Edit, ExternalLink, Github, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
+import { DeleteProjectButton } from "./DeleteProjectButton";
 
 import { type AdminContentType } from "@/app/[locale]/admin/admin.content";
 
@@ -23,14 +22,16 @@ export async function ProjectsList({ content }: { content: AdminContentType }) {
         <>
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold">
-                    {content.existingProjects as unknown as ReactNode} ({allProjects.length})
+                    {content.existingProjects as unknown as ReactNode} (
+                    {allProjects.length})
                 </h3>
                 <Button asChild>
                     <Link
                         href="/admin/projects/create"
                         className="flex items-center gap-2"
                     >
-                        <Plus className="h-4 w-4" /> {content.addNewProject as unknown as ReactNode}
+                        <Plus className="h-4 w-4" />{" "}
+                        {content.addNewProject as unknown as ReactNode}
                     </Link>
                 </Button>
             </div>
@@ -81,7 +82,7 @@ export async function ProjectsList({ content }: { content: AdminContentType }) {
                                         <div className="flex gap-2 text-muted-foreground">
                                             {project.github_url && (
                                                 <a
-                                                    key="github"
+                                                    key={`github-${project.id}`}
                                                     href={project.github_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
@@ -92,7 +93,7 @@ export async function ProjectsList({ content }: { content: AdminContentType }) {
                                             )}
                                             {project.live_url && (
                                                 <a
-                                                    key="live"
+                                                    key={`live-${project.id}`}
                                                     href={project.live_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
@@ -114,14 +115,22 @@ export async function ProjectsList({ content }: { content: AdminContentType }) {
                                                     href={`/admin/projects/${project.id}/edit`}
                                                 >
                                                     <Edit className="h-3 w-3 mr-1" />{" "}
-                                                    {content.editButton as unknown as ReactNode}
+                                                    {
+                                                        content.editButton as unknown as ReactNode
+                                                    }
                                                 </Link>
                                             </Button>
                                             <DeleteProjectButton
                                                 projectId={project.id}
-                                                deleteButtonText={content.deleteButton as unknown as string}
-                                                deletingButtonText={content.deletingButton as unknown as string}
-                                                deleteConfirmationText={content.deleteConfirmation as unknown as string}
+                                                deleteButtonText={
+                                                    content.deleteButton as unknown as string
+                                                }
+                                                deletingButtonText={
+                                                    content.deletingButton as unknown as string
+                                                }
+                                                deleteConfirmationText={
+                                                    content.deleteConfirmation as unknown as string
+                                                }
                                             />
                                         </div>
                                     </div>

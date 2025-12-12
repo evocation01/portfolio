@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import logger from "@/lib/logger";
 import { projects, projectsToTags, tags } from "@/lib/schema";
-import { eq, inArray, type ExtractTablesWithRelations } from "drizzle-orm";
+import { eq, type ExtractTablesWithRelations } from "drizzle-orm";
 import { type PgTransaction } from "drizzle-orm/pg-core";
 import { type VercelPgQueryResultHKT } from "drizzle-orm/vercel-postgres";
 import { revalidatePath } from "next/cache";
@@ -25,7 +25,7 @@ async function findOrCreateTags(tagNames: string[], tx: Transaction) {
     if (tagNames.length === 0) return [];
 
     const allDbTags = await tx.query.tags.findMany();
-    const dbTagMap = new Map(allDbTags.map(t => [t.name.toLowerCase(), t]));
+    const dbTagMap = new Map(allDbTags.map((t) => [t.name.toLowerCase(), t]));
 
     const tagIds: number[] = [];
     const tagsToCreate: { name: string }[] = [];
@@ -36,15 +36,22 @@ async function findOrCreateTags(tagNames: string[], tx: Transaction) {
             tagIds.push(existingTag.id);
         } else {
             // Avoid adding duplicates to the create list
-            if (!tagsToCreate.some(t => t.name.toLowerCase() === name.toLowerCase())) {
-                 tagsToCreate.push({ name });
+            if (
+                !tagsToCreate.some(
+                    (t) => t.name.toLowerCase() === name.toLowerCase()
+                )
+            ) {
+                tagsToCreate.push({ name });
             }
         }
     }
 
     if (tagsToCreate.length > 0) {
-        const newTags = await tx.insert(tags).values(tagsToCreate).returning({ id: tags.id });
-        tagIds.push(...newTags.map(t => t.id));
+        const newTags = await tx
+            .insert(tags)
+            .values(tagsToCreate)
+            .returning({ id: tags.id });
+        tagIds.push(...newTags.map((t) => t.id));
     }
 
     return tagIds;
@@ -52,7 +59,10 @@ async function findOrCreateTags(tagNames: string[], tx: Transaction) {
 
 // --- Zod Schemas ---
 const ProjectSchema = z.object({
-    slug: z.string().min(3).regex(/^[a-z0-9-]+$/, "Slug must be lowercase and hyphenated"),
+    slug: z
+        .string()
+        .min(3)
+        .regex(/^[a-z0-9-]+$/, "Slug must be lowercase and hyphenated"),
     title_en: z.string().min(1),
     description_en: z.string().min(1),
     body_en: z.string().min(1),
@@ -62,14 +72,18 @@ const ProjectSchema = z.object({
     github_url: z.string().url().optional().or(z.literal("")),
     live_url: z.string().url().optional().or(z.literal("")),
     thumbnail_url: z.string().url().optional().or(z.literal("")),
-    showOnHomepage: z.coerce.boolean(),
-    tags: z.string().transform((str) => str.split(',').map(t => t.trim()).filter(Boolean)),
+    showOnHomepage: z.preprocess((val) => val === "true", z.boolean()),
+    tags: z.string().transform((str) =>
+        str
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+    ),
 });
 
 const UpdateProjectSchema = ProjectSchema.extend({
     id: z.coerce.number(),
 });
-
 
 // --- Server Actions ---
 
@@ -77,9 +91,14 @@ export async function createProject(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user) return { message: "Unauthorized" };
 
-    const validatedFields = ProjectSchema.safeParse(Object.fromEntries(formData.entries()));
+    const validatedFields = ProjectSchema.safeParse(
+        Object.fromEntries(formData.entries())
+    );
     if (!validatedFields.success) {
-        return { errors: validatedFields.error.flatten().fieldErrors, message: "Missing Fields. Failed to Create Project." };
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: "Missing Fields. Failed to Create Project.",
+        };
     }
 
     const { tags: tagNames, ...projectData } = validatedFields.data;
@@ -87,7 +106,10 @@ export async function createProject(prevState: any, formData: FormData) {
     try {
         await db.transaction(async (tx) => {
             // Create the project
-            const newProject = await tx.insert(projects).values(projectData).returning({ id: projects.id });
+            const newProject = await tx
+                .insert(projects)
+                .values(projectData)
+                .returning({ id: projects.id });
             const projectId = newProject[0].id;
 
             // Find or create tags and get their IDs
@@ -95,12 +117,17 @@ export async function createProject(prevState: any, formData: FormData) {
 
             // Link tags to the project
             if (tagIds.length > 0) {
-                await tx.insert(projectsToTags).values(
-                    tagIds.map((tagId: number) => ({ projectId, tagId }))
-                );
+                await tx
+                    .insert(projectsToTags)
+                    .values(
+                        tagIds.map((tagId: number) => ({ projectId, tagId }))
+                    );
             }
 
-            logger.info("Project created", { slug: projectData.slug, user: session.user?.email });
+            logger.info("Project created", {
+                slug: projectData.slug,
+                user: session.user?.email,
+            });
         });
     } catch (error) {
         logger.error("Database Error: Failed to Create Project", { error });
@@ -112,39 +139,60 @@ export async function createProject(prevState: any, formData: FormData) {
     redirect("/admin");
 }
 
-
 export async function updateProject(prevState: any, formData: FormData) {
     const session = await auth();
     if (!session?.user) return { message: "Unauthorized" };
 
-    const validatedFields = UpdateProjectSchema.safeParse(Object.fromEntries(formData.entries()));
+    const validatedFields = UpdateProjectSchema.safeParse(
+        Object.fromEntries(formData.entries())
+    );
     if (!validatedFields.success) {
-        return { errors: validatedFields.error.flatten().fieldErrors, message: "Missing Fields. Failed to Update Project." };
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: "Missing Fields. Failed to Update Project.",
+        };
     }
 
-    const { id: projectId, tags: tagNames, ...projectData } = validatedFields.data;
+    const {
+        id: projectId,
+        tags: tagNames,
+        ...projectData
+    } = validatedFields.data;
 
     try {
         await db.transaction(async (tx) => {
             // Update the project
-            await tx.update(projects).set(projectData).where(eq(projects.id, projectId));
+            await tx
+                .update(projects)
+                .set(projectData)
+                .where(eq(projects.id, projectId));
 
             // Find or create tags and get their IDs
             const tagIds = await findOrCreateTags(tagNames, tx);
-            
+
             // Sync the tags for the project
-            await tx.delete(projectsToTags).where(eq(projectsToTags.projectId, projectId));
+            await tx
+                .delete(projectsToTags)
+                .where(eq(projectsToTags.projectId, projectId));
             if (tagIds.length > 0) {
-                await tx.insert(projectsToTags).values(
-                    tagIds.map((tagId: number) => ({ projectId, tagId }))
-                );
+                await tx
+                    .insert(projectsToTags)
+                    .values(
+                        tagIds.map((tagId: number) => ({ projectId, tagId }))
+                    );
             }
 
-            logger.info("Project updated", { slug: projectData.slug, user: session.user?.email });
+            logger.info("Project updated", {
+                slug: projectData.slug,
+                user: session.user?.email,
+            });
         });
     } catch (error) {
         logger.error("Database Error: Failed to Update Project.", { error });
-        return { message: "Database Error: Failed to update. Check server logs for details." };
+        return {
+            message:
+                "Database Error: Failed to update. Check server logs for details.",
+        };
     }
 
     revalidatePath("/admin");
