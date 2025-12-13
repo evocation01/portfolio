@@ -56,7 +56,7 @@ export default function ContactPageClient() {
     };
 
     return (
-        <div className="container flex items-center justify-center py-4 sm:py-10">
+        <div className="container flex flex-col items-center justify-center gap-8 py-4 sm:py-10">
             <Card className="w-full max-w-lg">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">

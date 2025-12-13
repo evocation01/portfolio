@@ -1,9 +1,11 @@
 // app/[locale]/(public)/about/page.tsx
 "use client";
 
+import { ContraButton } from "@/components/ContraButton";
 import { ResumeViewer } from "@/components/ResumeViewer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Github, Linkedin } from "lucide-react";
 import type { Metadata } from "next";
 import { getIntlayer, useIntlayer } from "next-intlayer";
 import aboutContent from "./about.content";
@@ -39,6 +41,14 @@ export default function AboutPageClient() {
                     <p className="mt-2 text-lg sm:text-xl text-muted-foreground">
                         {aboutContent.jobTitle.value}
                     </p>
+                    <div className="mt-4 flex justify-center md:justify-start gap-4">
+                        <a href="https://github.com/evocation01" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                            <Github className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" />
+                        </a>
+                        <a href="https://linkedin.com/in/hakanispir" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                            <Linkedin className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" />
+                        </a>
+                    </div>
                 </div>
             </header>
 
@@ -143,7 +153,7 @@ export default function AboutPageClient() {
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.volunteeringTitle.value}
                 </h2>
-                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                <ul className="list-disc list-inside space-y-.  2 text-muted-foreground">
                     {aboutContent.volunteering.map(
                         (role: any, index: number) => (
                             <li key={index}>{role.value}</li>
@@ -152,7 +162,7 @@ export default function AboutPageClient() {
                 </ul>
             </section>
 
-            <section>
+            <section className="mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 border-b pb-2">
                     {aboutContent.resumeTitle.value}
                 </h2>

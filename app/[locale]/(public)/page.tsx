@@ -1,9 +1,10 @@
 // app/[locale]/(public)/page.tsx
+import { ContraButton } from "@/components/ContraButton";
 import { LocalizedLink } from "@/components/LocalizedLink";
 import { ProjectsGrid } from "@/components/public/ProjectsGrid";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Github, Linkedin } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import { getIntlayer } from "next-intlayer";
 import Image from "next/image";
@@ -89,7 +90,7 @@ export default async function HomePage(props: {
                     <p className="max-w-2xl text-base md:text-lg text-muted-foreground mx-auto">
                         {content.description}
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-[2vw]">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 justify-center pt-[2vw]">
                         <Button asChild size="default" className="sm:size-lg">
                             <a href="#projects">{content.viewWork}</a>
                         </Button>
@@ -113,7 +114,16 @@ export default async function HomePage(props: {
                                 {content.contactMe}
                             </LocalizedLink>
                         </Button>
-                    </div>
+                                                                        <Button asChild variant="outline" size="icon">
+                                                                            <a href="https://github.com/evocation01" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                                                                                <Github />
+                                                                            </a>
+                                                                        </Button>
+                                                                        <Button asChild variant="outline" size="icon">
+                                                                            <a href="https://linkedin.com/in/hakanispir" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                                                                                <Linkedin />
+                                                                            </a>
+                                                                        </Button>                    </div>
                 </div>
             </section>
 
@@ -123,20 +133,19 @@ export default async function HomePage(props: {
                 className="py-16 bg-card text-card-foreground"
             >
                 <div className="mx-auto py-2 px-2">
-                    <div className="flex flex-col md:flex-row justify-center items-center mb-12 relative max-w-7xl mx-auto gap-4">
-                        <h2 className="text-2xl md:text-3xl font-bold text-center">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-12 max-w-7xl mx-auto gap-4">
+                        <h2 className="text-2xl md:text-3xl font-bold text-center md:text-left">
                             {content.featuredProjects}
                         </h2>
-                        <Button
-                            asChild
-                            variant="link"
-                            className="md:absolute md:right-0"
-                        >
-                            <LocalizedLink href="/projects">
-                                {content.moreProjects}
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                            </LocalizedLink>
-                        </Button>
+                        <div className="flex items-center gap-4">
+                            <ContraButton />
+                            <Button asChild variant="link">
+                                <LocalizedLink href="/projects">
+                                    {content.moreProjects}
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </LocalizedLink>
+                            </Button>
+                        </div>
                     </div>
                     <Suspense fallback={<ProjectsGridSkeleton />}>
                         <div className="max-w-7xl mx-auto">
